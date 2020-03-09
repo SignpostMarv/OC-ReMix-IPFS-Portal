@@ -88,16 +88,26 @@ function AlbumViewClickFactory(
 	};
 }
 
-function AlbumView(album: Album): TemplateResult {
-	return html`
+function AlbumView(album: Album): HTMLElement {
+	if (views.has(album)) {
+		return views.get(album) as HTMLElement;
+	}
+
+	const view = document.createElement('main');
+	views.set(album, view);
+	view.classList.add('view');
+
+	const template = html`
 		<ol class="covers">${asyncAppend(yieldAlbumCovers(album))}</ol>
 		<dl class="discs">${Object.entries(album.discs).map((disc) => {
 			const [discName, tracks] = disc;
 
-			return html`
-				<dt>${discName}</dt>
-				<dd>
-					<ol class="tracks">${tracks.map((track) => {
+			async function* yieldTracks(): AsyncGenerator<TemplateResult> {
+				for await (const template of  tracks.map(
+					async (track): Promise<TemplateResult> => {
+						const cid = await albumTrackCID(album, track);
+						const filename = track.subpath.replace(/^(.+\/)*/, '');
+
 						return html`
 							<li>
 								<button
@@ -111,14 +121,50 @@ function AlbumView(album: Album): TemplateResult {
 									)}
 								>⏯</button>
 								${track.name}
+								<a
+									class="as-button"
+									data-cid="${cid}"
+									download="${filename}"
+									title="Download ${filename}"
+								>🔽</a>
 							</li>
 						`;
-					})}</ol>
+					}
+				)) {
+					yield template;
+				}
+
+				tracks.forEach(async (track) => {
+					const cid = await albumTrackCID(album, track);
+
+					const trackEntry = view.querySelector(
+						`[download][data-cid="${cid}"]`
+					);
+
+					if ( ! (trackEntry instanceof HTMLAnchorElement)) {
+						throw new Error('Could not find track entry!');
+					}
+
+					trackEntry.href = await urlForThing(
+						track,
+						album.path + track.subpath
+					);
+				});
+			}
+
+			return html`
+				<dt>${discName}</dt>
+				<dd>
+					<ol class="tracks">${asyncAppend(yieldTracks())}</ol>
 				</dd>
 			`;
 		})}</dl>
 		${asyncAppend(yieldAlbumBackground(album))}
 	`;
+
+	render(template, view);
+
+	return view;
 }
 
 export async function albumView(
@@ -127,20 +173,7 @@ export async function albumView(
 	if (albumId in Albums) {
 		const album = await Albums[albumId]();
 
-		if ( ! views.has(album)) {
-			const view = document.createElement('main');
-			render(AlbumView(album), view);
-			view.classList.add('view');
-			views.set(album, view);
-		}
-
-		const result = views.get(album);
-
-		if ( ! (result instanceof HTMLElement)) {
-			throw new Error('views held non-element result!');
-		}
-
-		return [result, album];
+		return [AlbumView(album), album];
 	}
 
 	return;

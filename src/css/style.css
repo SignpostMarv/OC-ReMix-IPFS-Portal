@@ -153,11 +153,12 @@ button
 	background: none ;
 	border: none ;
 	cursor: pointer ;
+}
 
-	&:disabled
-	{
+button:disabled,
+a[download]:not([href])
+{
 		cursor: not-allowed ;
-	}
 }
 
 table
@@ -179,6 +180,7 @@ table
 .view,
 .settings
 {
+	.as-button,
 	button
 	{
 		background: #000 ;
@@ -191,6 +193,12 @@ table
 			background: #fff ;
 			color: #000;
 		}
+	}
+
+	.as-button
+	{
+		display: inline-block ;
+		text-decoration: none ;
 	}
 }
 
@@ -356,9 +364,21 @@ table
 	{
 		list-style: inside none ;
 
-		:not(:first-child)
+		> :not(:first-child)
 		{
 			margin-top: 1rem ;
+		}
+
+		> li
+		{
+			display: flex ;
+			flex-direction: row ;
+			align-items: center ;
+
+			[download]
+			{
+				margin-left: auto ;
+			}
 		}
 	}
 
