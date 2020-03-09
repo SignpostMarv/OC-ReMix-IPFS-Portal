@@ -36,72 +36,6 @@ const postcss_config = () => {
 	]);
 };
 
-gulp.task('cache-ipfs-tree-as-json', async () => {
-	const ipfs = await require('ipfs').create();
-
-	return new Promise(async (yup, nope) => {
-		try {
-			async function ReadIpfsDir(
-				cid,
-				directory_alias = '/'
-			) {
-				console.log('checking ' + directory_alias);
-
-				const ls = await ipfs.files.ls(
-					'/ipfs/' + cid,
-					{long:true}
-				);
-
-				const dir = {};
-
-				for await(const entry of ls) {
-					if (0 === entry.type) {
-						dir[directory_alias + entry.name] = entry.cid.toString();
-						console.log('got cid for ' + directory_alias + entry.name);
-					} else if (1 === entry.type) {
-						for (const subentry of Object.entries(await ReadIpfsDir(
-							cid + '/' + entry.name,
-							directory_alias + entry.name + '/'
-						))) {
-							dir[subentry[0]] = subentry[1];
-						}
-					}
-				}
-
-				return dir;
-			}
-
-			const ocremix = await ReadIpfsDir(
-				'QmR1eofNS6jaJu8vpHhSZ5jRXDbpUgs9ku6qHT44ySSTEn'
-			);
-
-			const fs = require('fs');
-
-			fs.writeFile(
-				'./dist/data/ocremix-cids.json',
-				JSON.stringify(ocremix),
-				() => {
-					fs.writeFile(
-						'./src/data/ocremix-cids.json',
-						JSON.stringify(ocremix, null, '\t'),
-						() => {
-							yup(0);
-						}
-					)
-				}
-			);
-		} catch (err) {
-			nope(err);
-		}
-	}).finally(() => {
-		try {
-			ipfs.stop();
-		} catch (err) {
-			console.error(err);
-		}
-	});
-});
-
 gulp.task('css--style', () => {
 	return gulp.src(
 		'./src/css/style.css'
@@ -294,7 +228,7 @@ gulp.task('sync--lit-html', () => {
 
 gulp.task('sync', () => {
 	return gulp.src([
-		'./tmp/{css/*.*,data/*.json,{js,data}/**/*.d.ts}',
+		'./tmp/{css/**/*.css,js/**/*.{d.ts,js,map}}',
 		'./src/module.d.ts',
 	]).pipe(
 		changed(
@@ -320,9 +254,23 @@ gulp.task('sync--html', () => {
 	)
 });
 
+gulp.task('sync--data', () => {
+	return gulp.src([
+		'./node_modules/ocremix-ipfs-data/src/module.d.ts',
+		'./node_modules/ocremix-ipfs-data/src/data/ocremix-cids.min.json',
+		'./node_modules/ocremix-ipfs-data/src/data/**/*.{ts,js,map}',
+	]).pipe(
+		newer('./dist/data')
+	).pipe(
+		gulp.dest('./dist/data/')
+	).pipe(
+		gulp.dest('./src/data/')
+	);
+});
+
 gulp.task('uglify', () => {
 	return gulp.src(
-		'./tmp/{js,data}/**/*.js'
+		'./tmp/{js}/**/*.js'
 	).pipe(
 		newer('./dist/')
 	).pipe(

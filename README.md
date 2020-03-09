@@ -2,7 +2,6 @@
 
 ## Build
 1) `npm install`
-2) `gulp cache-ipfs-tree-as-json` - this may take multiple attempts
 3) `gulp`
 
 ## Browse

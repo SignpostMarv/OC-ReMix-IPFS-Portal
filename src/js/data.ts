@@ -9,7 +9,7 @@ import {GetIpfsInstance} from './ipfs.js';
 import {mimeType} from './mimeType.js';
 
 export const ocremixCID = fetch(
-			'../data/ocremix-cids.json'
+	'../data/ocremix-cids.min.json'
 		).then((r) => {
 			return r.json();
 }) as Promise<{[path: string]: string}>;
