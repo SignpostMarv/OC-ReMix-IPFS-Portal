@@ -78,6 +78,7 @@ body
 	font-family: system-monospace ;
 }
 
+header > nav,
 h1
 {
 	font-size: calc(((3rem - 1.5rem) / 6) * 6) ;
@@ -118,6 +119,13 @@ header,
 header
 {
 	padding-bottom: 1rem ;
+	display: flex ;
+
+	nav
+	{
+		margin-left: 1rem ;
+		font-size:
+	}
 
 	a
 	{
