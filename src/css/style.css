@@ -212,6 +212,11 @@ table
 
 .app-info
 {
+	.albums
+	{
+		grid-gap: 1rem ;
+	}
+
 	.albums .entry
 	{
 		overflow: hidden ;
