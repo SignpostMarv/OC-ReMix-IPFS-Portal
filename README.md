@@ -14,3 +14,7 @@ Use any http server of your choice, open in a recent/modern browser.
 * Install [IPFS companion](https://github.com/ipfs-shipyard/ipfs-companion) (
 	this would allow you to fetch content from your local IPFS node,
 	rater than using the IPFS API)
+
+# See Also
+
+* [OC ReMix IPFS Data](https://github.com/signpostmarv/ocremix-ipfs-data)
