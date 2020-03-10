@@ -2,7 +2,7 @@
 
 ## Build
 1) `npm install`
-3) `gulp`
+2) `gulp`
 
 ## Browse
 Use any http server of your choice, open in a recent/modern browser.
