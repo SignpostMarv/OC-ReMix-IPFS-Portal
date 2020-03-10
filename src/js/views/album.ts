@@ -88,6 +88,24 @@ function AlbumViewClickFactory(
 	};
 }
 
+function AlbumViewDownloadFactory(
+	album: Album,
+	track: Track
+): (e: Event) => Promise<void> {
+	return async (e: Event): Promise<void> => {
+		const button = e.target as HTMLButtonElement;
+		const download = button.nextElementSibling;
+
+		if ( ! (download instanceof HTMLAnchorElement)) {
+			throw new Error('Could not find download button!');
+		}
+		download.textContent = '⏳';
+		button.disabled = true;
+		download.href = await urlForThing(track, album.path + track.subpath);
+		download.textContent = '🔽';
+	};
+}
+
 function AlbumView(album: Album): HTMLElement {
 	if (views.has(album)) {
 		return views.get(album) as HTMLElement;
@@ -102,10 +120,11 @@ function AlbumView(album: Album): HTMLElement {
 		<dl class="discs">${Object.entries(album.discs).map((disc) => {
 			const [discName, tracks] = disc;
 
-			async function* yieldTracks(): AsyncGenerator<TemplateResult> {
-				for await (const template of  tracks.map(
-					async (track): Promise<TemplateResult> => {
-						const cid = await albumTrackCID(album, track);
+			return html`
+				<dt>${discName}</dt>
+				<dd>
+					<ol class="tracks">${tracks.map(
+						(track): TemplateResult => {
 						const filename = track.subpath.replace(/^(.+\/)*/, '');
 
 						return html`
@@ -120,42 +139,29 @@ function AlbumView(album: Album): HTMLElement {
 										track
 									)}
 								>⏯</button>
+								<span>
 								${track.name}
+								</span>
+								<button
+									type="button"
+									aria-label="Prepare download for ${
+										track.name
+									}"
+									title="Prepare Download"
+									@click=${AlbumViewDownloadFactory(
+										album,
+										track
+									)}
+								>🔽</button>
 								<a
 									class="as-button"
-									data-cid="${cid}"
 									download="${filename}"
 									title="Download ${filename}"
-								>🔽</a>
+								>⛔</a>
 							</li>
 						`;
-					}
-				)) {
-					yield template;
-				}
-
-				tracks.forEach(async (track) => {
-					const cid = await albumTrackCID(album, track);
-
-					const trackEntry = view.querySelector(
-						`[download][data-cid="${cid}"]`
-					);
-
-					if ( ! (trackEntry instanceof HTMLAnchorElement)) {
-						throw new Error('Could not find track entry!');
-					}
-
-					trackEntry.href = await urlForThing(
-						track,
-						album.path + track.subpath
-					);
-				});
-			}
-
-			return html`
-				<dt>${discName}</dt>
-				<dd>
-					<ol class="tracks">${asyncAppend(yieldTracks())}</ol>
+						}
+					)}</ol>
 				</dd>
 			`;
 		})}</dl>

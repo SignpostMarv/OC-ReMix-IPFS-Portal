@@ -376,18 +376,6 @@ table
 		{
 			margin-top: 1rem ;
 		}
-
-		> li
-		{
-			display: flex ;
-			flex-direction: row ;
-			align-items: center ;
-
-			[download]
-			{
-				margin-left: auto ;
-			}
-		}
 	}
 
 	.covers
@@ -455,6 +443,57 @@ table
 		button
 		{
 			margin-right: 1rem ;
+		}
+
+		> li
+		{
+			display: flex ;
+			flex-direction: row ;
+			align-items: center ;
+
+			> span
+			{
+				margin-right: auto ;
+			}
+
+			button ~ button,
+			[download]
+			{
+				transition:
+					transform .5s ease-in-out,
+					opacity .5s ease-in-out
+				;
+			}
+
+			button ~ button
+			{
+				transform: translateX(100%) ;
+				opacity: 1 ;
+				margin-right: 0 ;
+
+				&:disabled,
+				&:disabled + [download]
+				{
+					transform: translateX(0) ;
+				}
+
+				&:disabled
+				{
+					opacity: 0 ;
+
+					+ [download]
+					{
+						opacity: 1 ;
+					}
+				}
+
+				&:not(:disabled) + [download]
+				{
+					margin-left: 0 ;
+					transform: translateX(100%) ;
+					opacity: 0 ;
+				}
+			}
 		}
 	}
 
