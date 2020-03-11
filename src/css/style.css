@@ -307,12 +307,20 @@ table
 
 	.entry
 	{
-		display: block ;
 		position: relative ;
 		transform: scale(.9) ;
 		transition: transform .1s ease-in-out ;
 		width: 16rem ;
 		height: 16rem ;
+		display: flex ;
+		justify-content: center ;
+		align-items: center ;
+		background: #ccc ;
+
+		@media (prefers-color-scheme: dark)
+		{
+			background: #333 ;
+		}
 
 		&:hover,
 		&:focus,

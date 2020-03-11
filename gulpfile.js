@@ -292,6 +292,7 @@ gulp.task('default', gulp.series(
 		'sync--ipfs--build-module'
 	),
 	gulp.parallel(
+		'sync--data',
 		'sync--ipfs--minify-module',
 		'css--first-load',
 		'css--style'

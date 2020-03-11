@@ -10,6 +10,7 @@ import {
 import {
 	urlForThing,
 } from '../data.js';
+import { AlbumWithArt } from '../../../dist/data/module';
 
 const title = document.head.querySelector('title');
 
@@ -58,7 +59,7 @@ export async function picture(
 
 export async function* yieldPlaceholderThenPicture(
 	placeholder: string,
-	album: Album,
+	album: AlbumWithArt,
 	art: ImageSource
 ): AsyncGenerator<string|HTMLPictureElement> {
 	yield placeholder;
@@ -67,7 +68,7 @@ export async function* yieldPlaceholderThenPicture(
 }
 
 export async function* yieldAlbumCovers(
-	album: Album
+	album: AlbumWithArt
 ): AsyncGenerator<TemplateResult> {
 	for await (const appendPicture of album.art.covers.map(
 		(cover): Promise<HTMLPictureElement> => {
@@ -79,7 +80,7 @@ export async function* yieldAlbumCovers(
 }
 
 export async function* yieldAlbumBackground(
-	album: Album
+	album: AlbumWithArt
 ): AsyncGenerator<HTMLPictureElement> {
 	yield await picture(album, album.art.background, 'bg');
 }

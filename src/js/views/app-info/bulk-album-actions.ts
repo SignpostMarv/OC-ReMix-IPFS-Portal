@@ -22,6 +22,7 @@ import {
 import {
 	yieldPlaceholderThenPicture as baseYieldPlaceholderThenPicture,
 } from '../../utilities/elements.js';
+import { AlbumWithArt } from '../../../../dist/data/module';
 
 export const appInfo = ((): HTMLElement => {
 	const appInfo = document.createElement('main');
@@ -489,7 +490,10 @@ export async function* yieldBulkAlbumAction(
 
 	const album = await getAlbum();
 	const pathsForApp: Array<string> = [];
-	const imageSourcesForAlubm = album.art.covers;
+	const imageSourcesForAlbum =
+		('art' in album)
+			? (album as AlbumWithArt).art.covers
+			: [];
 
 	const filesInIpfs = Object.fromEntries(
 		Object.entries(await ocremixCID).filter(
@@ -499,7 +503,9 @@ export async function* yieldBulkAlbumAction(
 		)
 	);
 
-	imageSourcesForAlubm.push(album.art.background);
+	if ('art' in album) {
+		imageSourcesForAlbum.push((album as AlbumWithArt).art.background);
+	}
 
 	Object.values(album.discs).forEach((tracks) => {
 		tracks.forEach((track) => {
@@ -507,7 +513,7 @@ export async function* yieldBulkAlbumAction(
 		});
 	});
 
-	imageSourcesForAlubm.forEach((source) => {
+	imageSourcesForAlbum.forEach((source) => {
 		pathsForApp.push(album.path + source.subpath);
 
 		source.srcset.forEach((srcset) => {
@@ -540,11 +546,17 @@ export async function* yieldBulkAlbumAction(
 		)}
 		${asyncReplace((
 			async function* (): AsyncGenerator<string|HTMLPictureElement> {
+				if ('art' in album) {
 				yield* baseYieldPlaceholderThenPicture(
 					'Loading...',
-					album,
-					album.art.covers[0]
+						album as AlbumWithArt,
+						(album as AlbumWithArt).art.covers[0]
 				);
+				} else {
+					yield (
+						album as Album
+					).id.replace(/^(.{4})(.{4})$/, '$1-$2');
+				}
 
 				await updateStorageEstimate();
 

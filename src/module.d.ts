@@ -3,6 +3,7 @@ export {
 	ImageSource,
 	Discs,
 	Album,
+	AlbumWithArt,
 	Track,
 } from './data/module';
 

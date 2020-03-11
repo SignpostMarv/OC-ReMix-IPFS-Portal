@@ -20,6 +20,7 @@ import {
 import {
 	yieldAlbumBackground, yieldAlbumCovers
 } from '../utilities/elements.js';
+import { AlbumWithArt } from '../../../dist/data/module';
 
 let currentTrack: Track|undefined;
 
@@ -116,7 +117,13 @@ function AlbumView(album: Album): HTMLElement {
 	view.classList.add('view');
 
 	const template = html`
-		<ol class="covers">${asyncAppend(yieldAlbumCovers(album))}</ol>
+		${
+			! ('art' in album)
+				? ''
+				: html`<ol class="covers">${
+					asyncAppend(yieldAlbumCovers(album as AlbumWithArt))
+				}</ol>`
+		}
 		<dl class="discs">${Object.entries(album.discs).map((disc) => {
 			const [discName, tracks] = disc;
 
@@ -165,7 +172,11 @@ function AlbumView(album: Album): HTMLElement {
 				</dd>
 			`;
 		})}</dl>
-		${asyncAppend(yieldAlbumBackground(album))}
+		${
+			! ('art' in album)
+				? ''
+				: asyncAppend(yieldAlbumBackground(album as AlbumWithArt))
+		}
 	`;
 
 	render(template, view);

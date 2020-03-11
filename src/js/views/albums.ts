@@ -19,6 +19,7 @@ import {
 	yieldPlaceholderThenPicture,
 	updateTitleSuffix,
 } from '../utilities/elements.js';
+import { AlbumWithArt } from '../../../dist/data/module';
 
 const albums = document.createElement('main');
 
@@ -33,10 +34,13 @@ async function AddAlbum(
 		href="#album/${albumId}"
 		data-name="${album.name}"
 		aria-label="View &quot;${album.name}&quot;"
-	>${asyncReplace(yieldPlaceholderThenPicture(
+	>${
+		! ('art' in album)
+			? album.id.replace(/^(.{4})(.{4})$/, '$1-$2')
+			: asyncReplace(yieldPlaceholderThenPicture(
 		'Loading...',
 		album,
-		album.art.covers[0]
+		(album as AlbumWithArt).art.covers[0]
 	))}</a>`;
 
 	return button;
