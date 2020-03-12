@@ -1,5 +1,6 @@
 import {
 	Album,
+	AlbumWithArt,
 	Track,
 } from '../../module';
 import {
@@ -20,7 +21,6 @@ import {
 import {
 	yieldAlbumBackground, yieldAlbumCovers
 } from '../utilities/elements.js';
-import { AlbumWithArt } from '../../../dist/data/module';
 
 let currentTrack: Track|undefined;
 let isPlaying = false;
@@ -35,10 +35,10 @@ const audio = ((): HTMLAudioElement => {
 	audio.addEventListener('ended', () => {
 		currentTrack = undefined;
 	});
-	audio.onplaying = () => {
+	audio.onplaying = (): void => {
 		isPlaying = true;
 	};
-	audio.onpause = () => {
+	audio.onpause = (): void => {
 		isPlaying = false;
 	}
 

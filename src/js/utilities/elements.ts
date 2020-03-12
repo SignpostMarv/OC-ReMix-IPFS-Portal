@@ -10,7 +10,7 @@ import {
 import {
 	urlForThing,
 } from '../data.js';
-import { AlbumWithArt } from '../../../dist/data/module';
+import { AlbumWithArt } from '../../data/module';
 
 const title = document.head.querySelector('title');
 
