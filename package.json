@@ -25,7 +25,7 @@
 		"gulp-uglify-es": "^2.0.0",
 		"ipfs": "^0.41.2",
 		"lit-html": "^1.1.2",
-		"ocremix-ipfs-data": "^0.2.2",
+		"ocremix-ipfs-data": "^0.3.0",
 		"postcss-calc": "^7.0.2",
 		"postcss-font-family-system-ui": "^4.2.0",
 		"postcss-import": "^12.0.1",

@@ -2,6 +2,7 @@ import {
 	Album,
 	AlbumWithArt,
 	Track,
+	BrokenTrack,
 } from '../../module';
 import {
 	albumTrackCID,
@@ -118,6 +119,18 @@ function AlbumViewDownloadFactory(
 	};
 }
 
+function noFixAvailable(): TemplateResult {
+	return html`
+		<span
+			class="as-button"
+			title="${
+				'This track is known to be broken' +
+				', but no fix is currently available.'
+			}"
+		>⚠</span>
+	`
+}
+
 function AlbumView(album: Album): HTMLElement {
 	if (views.has(album)) {
 		return views.get(album) as HTMLElement;
@@ -160,6 +173,14 @@ function AlbumView(album: Album): HTMLElement {
 								<span>
 								${track.name}
 								</span>
+								${
+									(
+										'fixAvailable' in track &&
+										! (track as BrokenTrack).fixAvailable
+									)
+										? noFixAvailable()
+										: ''
+								}
 								<button
 									type="button"
 									aria-label="Prepare download for ${

@@ -464,7 +464,7 @@ table
 			flex-direction: row ;
 			align-items: center ;
 
-			> span
+			> span:not([class])
 			{
 				margin-right: auto ;
 			}
