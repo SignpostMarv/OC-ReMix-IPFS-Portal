@@ -23,6 +23,7 @@ import {
 import { AlbumWithArt } from '../../../dist/data/module';
 
 let currentTrack: Track|undefined;
+let isPlaying = false;
 
 const views: WeakMap<Album, HTMLElement> = new WeakMap();
 const audio = ((): HTMLAudioElement => {
@@ -34,6 +35,12 @@ const audio = ((): HTMLAudioElement => {
 	audio.addEventListener('ended', () => {
 		currentTrack = undefined;
 	});
+	audio.onplaying = () => {
+		isPlaying = true;
+	};
+	audio.onpause = () => {
+		isPlaying = false;
+	}
 
 	return audio;
 })();
@@ -45,7 +52,9 @@ document.body.appendChild(audio);
 function play(src: string): void {
 	console.log(src);
 	if (audio.src !== src) {
+		if (isPlaying) {
 		audio.pause();
+		}
 		audio.src = src;
 	}
 	audio.play();
@@ -61,7 +70,9 @@ function AlbumViewClickFactory(
 		const button = e.target as HTMLButtonElement;
 
 		if (currentTrack === track) {
+			if (isPlaying) {
 			audio.pause();
+			}
 			button.textContent = '⏯';
 			currentTrack = undefined;
 
