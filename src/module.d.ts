@@ -30,3 +30,33 @@ export type SupportedExtensionUpperOrLower = (
 	'JPG'|
 	'JPEG'
 );
+
+export interface MediaSessionNavigator extends Navigator {
+	mediaSession: MediaSession;
+}
+
+export interface MediaSession {
+	metadata: MediaMetadata;
+	playbackState: 'none'|'paused'|'playing';
+	setActionHandler: (type:string, callback: () => void) => void;
+}
+
+export interface MediaMetadataArtwork {
+	src: string;
+	sizes: string;
+	type: string;
+}
+
+declare class MediaMetadata {
+	title: string;
+	artist: string;
+	album: string;
+	artwork: Array<MediaMetadataArtwork>;
+
+	constructor({title, artist, album, artwork}: {
+		title: string;
+		artist: string;
+		album: string;
+		artwork: Array<MediaMetadataArtwork>;
+	});
+}

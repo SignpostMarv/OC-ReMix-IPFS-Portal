@@ -3,7 +3,11 @@ import {
 	AlbumWithArt,
 	Track,
 	BrokenTrack,
-} from '../../module';
+	MediaSessionNavigator,
+	MediaMetadataArtwork,
+	SupportedExtensionUpperOrLower,
+	SupportedExtensionLower,
+} from '../../module.js';
 import {
 	albumTrackCID,
 	urlForThing,
@@ -22,6 +26,9 @@ import {
 import {
 	yieldAlbumBackground, yieldAlbumCovers
 } from '../utilities/elements.js';
+import {
+	mimeType,
+} from '../mimeType.js';
 
 let currentTrack: Track|undefined;
 let isPlaying = false;
@@ -61,6 +68,39 @@ function play(src: string): void {
 	audio.play();
 }
 
+async function AlbumToMediaMetadataArt(
+	album: AlbumWithArt
+): Promise<Array<MediaMetadataArtwork>> {
+	const out: Array<MediaMetadataArtwork> = [];
+
+	return await Promise.all(album.art.covers.concat([album.art.background]).map(
+		async (art): Promise<MediaMetadataArtwork> => {
+			const path = album.path + art.subpath;
+			const match = /.(png|jpe?g)$/i.exec(path);
+
+			if ( ! match) {
+				throw new Error('Unsupported file type requested!');
+			}
+
+			const [, EXT] = match;
+
+			const ext = (
+				(
+					EXT as SupportedExtensionUpperOrLower
+				).toLowerCase() as SupportedExtensionLower
+			);
+
+			return {
+				src: await urlForThing(art, path),
+				sizes: `${art.width}x${art.height}`,
+				type: mimeType(ext),
+			};
+		}
+	));
+
+	return out;
+}
+
 function AlbumViewClickFactory(
 	album: Album,
 	track: Track
@@ -97,6 +137,24 @@ function AlbumViewClickFactory(
 		if (cid === trackMostRecentlyAttemptedToPlay) {
 			currentTrack = track;
 			play(trackUrl);
+
+			if ('mediaSession' in navigator) {
+				const metadata = new (window as any).MediaMetadata({
+					artist: '',
+					title: track.name,
+					album: album.name,
+					artwork: (
+						! ('art' in album)
+							? []
+							: await AlbumToMediaMetadataArt(
+								album as AlbumWithArt
+							)
+					),
+				});
+				(
+					navigator as MediaSessionNavigator
+				).mediaSession.metadata = metadata;
+			}
 		}
 	};
 }
