@@ -255,7 +255,7 @@ gulp.task('rollup', async () => {
 	});
 });
 
-gulp.task('build', gulp.series(...[
+gulp.task('default', gulp.series(...[
 	gulp.parallel(...[
 		'html',
 		'css--first-load',
@@ -267,21 +267,3 @@ gulp.task('build', gulp.series(...[
 	'rollup',
 	'sync--html',
 ]));
-
-gulp.task('default', gulp.series(
-	gulp.parallel(
-		'html',
-		'ts',
-		'sync--ipfs--build-module'
-	),
-	gulp.parallel(
-		'sync--data',
-		'css--first-load',
-		'css--style'
-	),
-	gulp.parallel(
-		'sync',
-		'sync--html',
-		'uglify'
-	)
-));
