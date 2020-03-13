@@ -15,14 +15,14 @@ import {
 	html,
 	render,
 	TemplateResult,
-} from '../../../lit-html/lit-html.js';
+} from 'lit-html';
 import {
 	asyncReplace,
-} from '../../../lit-html/directives/async-replace.js';
+} from 'lit-html/directives/async-replace.js';
 import {
 	yieldPlaceholderThenPicture as baseYieldPlaceholderThenPicture,
 } from '../../utilities/elements.js';
-import { AlbumWithArt } from '../../../../dist/data/module';
+import { AlbumWithArt } from '../../../module';
 
 export const appInfo = ((): HTMLElement => {
 	const appInfo = document.createElement('main');

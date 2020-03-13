@@ -20,10 +20,10 @@ import {
 	html,
 	render,
 	TemplateResult,
-} from '../../lit-html/lit-html.js';
+} from 'lit-html';
 import {
 	asyncAppend
-} from '../../lit-html/directives/async-append.js';
+} from 'lit-html/directives/async-append.js';
 import {
 	yieldAlbumBackground, yieldAlbumCovers
 } from '../utilities/elements.js';

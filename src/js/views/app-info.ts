@@ -1,7 +1,7 @@
 import {
 	html,
 	render,
-} from '../../lit-html/lit-html.js';
+} from 'lit-html';
 import {
 	updateStorageEstimate,
 	storageEstimate,

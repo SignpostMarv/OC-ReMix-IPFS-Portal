@@ -1,7 +1,7 @@
 import {
 	render,
 	html,
-} from '../../lit-html/lit-html.js';
+} from 'lit-html';
 import {
 	updateTitleSuffix,
 } from '../utilities/elements.js';

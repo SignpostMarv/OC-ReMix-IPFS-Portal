@@ -6,7 +6,7 @@ import {
 	TemplateResult,
 	html,
 	render,
-} from '../../lit-html/lit-html.js';
+} from 'lit-html';
 import {
 	urlForThing,
 } from '../data.js';

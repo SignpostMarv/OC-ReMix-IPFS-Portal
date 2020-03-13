@@ -5,13 +5,13 @@ import {
 	html,
 	render,
 	TemplateResult,
-} from '../../lit-html/lit-html.js';
+} from 'lit-html';
 import {
 	asyncAppend
-} from '../../lit-html/directives/async-append.js';
+} from 'lit-html/directives/async-append.js';
 import {
 	asyncReplace
-} from '../../lit-html/directives/async-replace.js';
+} from 'lit-html/directives/async-replace.js';
 import {
 	Albums,
 } from '../../data/albums.js';
@@ -19,7 +19,7 @@ import {
 	yieldPlaceholderThenPicture,
 	updateTitleSuffix,
 } from '../utilities/elements.js';
-import { AlbumWithArt } from '../../../dist/data/module';
+import { AlbumWithArt } from '../../module';
 
 const albums = document.createElement('main');
 

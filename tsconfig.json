@@ -17,6 +17,7 @@
 			}
 		],
 		"module": "ESNext",
+		"moduleResolution": "Node",
 		"newLine": "lf",
 		"noEmitOnError": true,
 		"noErrorTruncation": true,
@@ -25,7 +26,8 @@
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
 		"strict": true,
-		"declarationDir": "./dist/",
+		"declarationDir": "./",
+		"baseUrl": "./",
 		"rootDir": "./",
 		"target": "ESNext"
 	},
