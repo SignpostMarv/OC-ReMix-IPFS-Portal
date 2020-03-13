@@ -436,7 +436,9 @@ export function RemoveAllFactory(
 		);
 
 		const cache = await ocremixCache();
-		const deleteFromCacheByPath = async (path: string): Promise<boolean> => {
+		const deleteFromCacheByPath = async (
+			path: string
+		): Promise<boolean> => {
 			const cid = await pathCID(path);
 
 			return cache.delete(new Request('/ipfs/' + cid));

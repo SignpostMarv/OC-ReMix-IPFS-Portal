@@ -56,7 +56,10 @@ const audio = ((): HTMLAudioElement => {
 
 	return audio;
 })();
-const preloadAlbumDiscArtPromises: WeakMap<Album, Promise<string[]>> = new WeakMap();
+const preloadAlbumDiscArtPromises: WeakMap<
+	Album,
+	Promise<string[]>
+> = new WeakMap();
 const completed: WeakSet<Promise<string[]>> = new WeakSet();
 
 async function preloadAlbumDiscArt(album: Album): Promise<string[]> {
