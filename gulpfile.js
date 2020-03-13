@@ -12,6 +12,10 @@ const filter = require('gulp-filter');
 const sourcemaps = require('gulp-sourcemaps');
 const uglify = require('gulp-uglify-es').default;
 const inline_source = require('gulp-inline-source');
+const rollup = require('rollup');
+const rollupNodeResolve = require('@rollup/plugin-node-resolve');
+const cleanup = require('rollup-plugin-cleanup');
+const merge = require('merge-stream');
 
 const postcss_plugins = {
 	nested: require('postcss-nested'),
@@ -40,11 +44,11 @@ gulp.task('css--style', () => {
 	return gulp.src(
 		'./src/css/style.css'
 	).pipe(
-		newer('./tmp/css/')
+		newer('./dist/css/')
 	).pipe(
 		postcss_config()
 	).pipe(gulp.dest(
-		'./tmp/css/'
+		'./dist/css/'
 	));
 });
 
@@ -82,75 +86,57 @@ gulp.task('html', () => {
 	));
 });
 
-gulp.task('ts', () => {
+const makeTypescript = (
+	glob,
+	filterOptions = ['**'],
+	projectFile = './tsconfig.json'
+) => {
 	return gulp.src(
-		'./src/{js,data}/**/*.ts'
+		glob
 	).pipe(
-		filter([
+		filter(filterOptions)
+	).pipe(
+		sourcemaps.init()
+	).pipe(
+		eslint({
+			configFile: './.eslint.js',
+		})
+	).pipe(
+		eslint.format()
+	).pipe(
+		eslint.failAfterError()
+	).pipe(newer({
+		dest: './tmp/',
+		ext: '.js',
+	})).pipe(
+		typescript.createProject(projectFile)()
+	);
+};
+
+gulp.task('ts', () => {
+	const ts = makeTypescript(
+		'./src/{js,data}/**/*.ts',
+		[
 			'**',
 			'!**/*.worker.ts',
-		])
-	).pipe(
-		sourcemaps.init()
-	).pipe(
-		eslint({
-			configFile: './.eslint.js',
-		})
-	).pipe(
-		eslint.format()
-	).pipe(
-		eslint.failAfterError()
-	).pipe(newer({
-		dest: './tmp/',
-		ext: '.js',
-	})).pipe(
-		typescript.createProject('./tsconfig.json')()
-	).pipe(
-		replace(/\ {4}/g, '\t')
-	).pipe(
+		]
+	);
+
+	const workers = makeTypescript(
+		'./src/{js,data}/**/*.worker.ts',
+		[],
+		'./tsconfig.workers.json'
+	);
+
+	return merge(...[
+		ts.js.pipe(uglify()),
+		workers.pipe(uglify()),
+		ts.dts,
+		workers.dts,
+	]).pipe(
 		sourcemaps.write('./')
 	).pipe(gulp.dest(
 		'./tmp/'
-	));
-});
-
-gulp.task('ts--workers', () => {
-	return gulp.src(
-		'./src/{js,data}/**/*.worker.ts'
-	).pipe(
-		sourcemaps.init()
-	).pipe(
-		eslint({
-			configFile: './.eslint.js',
-		})
-	).pipe(
-		eslint.format()
-	).pipe(
-		eslint.failAfterError()
-	).pipe(newer({
-		dest: './tmp/',
-		ext: '.js',
-	})).pipe(
-		typescript.createProject('./tsconfig.workers.json')()
-	).pipe(
-		replace(/\ {4}/g, '\t')
-	).pipe(
-		sourcemaps.write('./')
-	).pipe(gulp.dest(
-		'./tmp/'
-	));
-});
-
-gulp.task('sync--ipfs', () => {
-	return gulp.src('./node_modules/ipfs/dist/**/*.*').pipe(
-		changed(
-			'./dist/ipfs/',
-			{
-				hasChanged: changed.compareContents
-			}
-		)
-	).pipe(gulp.dest(
-		'./dist/ipfs/'
 	));
 });
 
@@ -193,37 +179,12 @@ gulp.task('sync--ipfs--build-module', () => {
 			)
 		)
 	).pipe(
+		uglify()
+	).pipe(
 		sourcemaps.write('./')
 	).pipe(
 		gulp.dest('./dist/ipfs/')
 	)
-});
-
-gulp.task('sync--ipfs--minify-module', () => {
-	return gulp.src('./dist/ipfs/index.module.js').pipe(
-		sourcemaps.init({loadMaps:true})
-	).pipe(
-		rename('index.module.min.js')
-	).pipe(
-		newer('./dist/ipfs/')
-	).pipe(uglify()).pipe(sourcemaps.write('./')).pipe(
-		gulp.dest('./dist/ipfs/')
-	);
-});
-
-gulp.task('sync--lit-html', () => {
-	return gulp.src('./node_modules/lit-html/**/*.*').pipe(
-		changed(
-			'./dist/lit-html/',
-			{
-				hasChanged: changed.compareContents
-			}
-		)
-	).pipe(gulp.dest(
-		'./dist/lit-html/'
-	)).pipe(gulp.dest(
-		'./src/lit-html/'
-	));
 });
 
 gulp.task('sync', () => {
@@ -256,15 +217,11 @@ gulp.task('sync--html', () => {
 
 gulp.task('sync--data', () => {
 	return gulp.src([
-		'./node_modules/ocremix-ipfs-data/src/module.d.ts',
 		'./node_modules/ocremix-ipfs-data/src/data/ocremix-cids.min.json',
-		'./node_modules/ocremix-ipfs-data/src/data/**/*.{ts,js,map}',
 	]).pipe(
 		newer('./dist/data')
 	).pipe(
 		gulp.dest('./dist/data/')
-	).pipe(
-		gulp.dest('./src/data/')
 	);
 });
 
@@ -282,18 +239,43 @@ gulp.task('uglify', () => {
 	).pipe(gulp.dest('./dist/'));
 });
 
+gulp.task('rollup', async () => {
+	const bundle = await rollup.rollup({
+		input: './tmp/js/load.js',
+		plugins: [
+			rollupNodeResolve(),
+			cleanup(),
+		],
+	});
+
+	return await bundle.write({
+		sourcemap: true,
+		format: 'es',
+		dir: './dist/js/',
+	});
+});
+
+gulp.task('build', gulp.series(...[
+	gulp.parallel(...[
+		'html',
+		'css--first-load',
+		'css--style',
+		'ts',
+		'sync--ipfs--build-module',
+		'sync--data',
+	]),
+	'rollup',
+	'sync--html',
+]));
+
 gulp.task('default', gulp.series(
 	gulp.parallel(
 		'html',
 		'ts',
-		'ts--workers',
-		'sync--lit-html',
-		'sync--ipfs',
 		'sync--ipfs--build-module'
 	),
 	gulp.parallel(
 		'sync--data',
-		'sync--ipfs--minify-module',
 		'css--first-load',
 		'css--style'
 	),

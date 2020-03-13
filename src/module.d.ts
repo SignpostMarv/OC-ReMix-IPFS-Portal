@@ -1,14 +1,4 @@
-export {
-	SrcsetSource,
-	ImageSource,
-	Discs,
-	Album,
-	AlbumWithArt,
-	Track,
-	BrokenTrack,
-	Credit,
-	GroupCredit,
-} from './data/module';
+export * from 'ocremix-ipfs-data/src/module';
 
 export interface IpfsGlobal {
 	create: () => Promise<IpfsInstance>;

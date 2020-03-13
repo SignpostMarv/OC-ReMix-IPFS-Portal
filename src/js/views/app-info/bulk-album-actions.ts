@@ -10,7 +10,7 @@ import {
 } from '../../data.js';
 import {
 	Albums
-} from '../../../data/albums.js';
+} from 'ocremix-ipfs-data/src/data/albums.js';
 import {
 	html,
 	render,

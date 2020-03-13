@@ -35,7 +35,7 @@ export function GetIpfsInstance(): Promise<IpfsInstance> {
 				yup (
 					await ((await import(src)).Ipfs as IpfsGlobal).create()
 				);
-			})('../ipfs/index.module.min.js');
+			})('/ipfs/index.module.js');
 		});
 	}
 
