@@ -340,16 +340,17 @@ export function GetAllFactory(
 
 		await Promise.all(Object.keys(notCachedForApp).map(async (path) => {
 			return fetchBlobViaCacheOrIpfs(path).then((result) => {
-			++numberOfCachedForIpfs;
-			++numberOfCachedForApp;
+				++numberOfCachedForIpfs;
+				++numberOfCachedForApp;
 
-			progressForApp.value = (
-				numberOfCachedForApp / numberOfFilesInApp
-			);
+				progressForApp.value = (
+					numberOfCachedForApp / numberOfFilesInApp
+				);
 
-			progressForIpfs.value = (
-				numberOfCachedForIpfs / numberOfFilesInIpfs
-			);
+				progressForIpfs.value = (
+					numberOfCachedForIpfs / numberOfFilesInIpfs
+				);
+
 				return result;
 			});
 		}));
@@ -443,16 +444,17 @@ export function RemoveAllFactory(
 
 		await Promise.all(Object.keys(cachedForApp).map((path: string) => {
 			return deleteFromCacheByPath(path).then((maybe: boolean) => {
-			--numberOfCachedForIpfs;
-			--numberOfCachedForApp;
+				--numberOfCachedForIpfs;
+				--numberOfCachedForApp;
 
-			progressForApp.value = (
-				numberOfCachedForApp / numberOfFilesInApp
-			);
+				progressForApp.value = (
+					numberOfCachedForApp / numberOfFilesInApp
+				);
 
-			progressForIpfs.value = (
-				numberOfCachedForIpfs / numberOfFilesInIpfs
-			);
+				progressForIpfs.value = (
+					numberOfCachedForIpfs / numberOfFilesInIpfs
+				);
+
 				return maybe;
 			});
 		}));
@@ -468,11 +470,11 @@ export function RemoveAllFactory(
 
 		await Promise.all(Object.keys(cachedInIpfs).map((path: string) => {
 			return deleteFromCacheByPath(path).then((maybe: boolean) => {
-			--numberOfCachedForIpfs;
+				--numberOfCachedForIpfs;
 
-			progressForIpfs.value = (
-				numberOfCachedForIpfs / numberOfFilesInIpfs
-			);
+				progressForIpfs.value = (
+					numberOfCachedForIpfs / numberOfFilesInIpfs
+				);
 
 				return maybe;
 			});
