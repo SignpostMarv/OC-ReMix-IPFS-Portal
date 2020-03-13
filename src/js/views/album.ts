@@ -8,7 +8,10 @@ import {
 	SupportedExtensionUpperOrLower,
 	SupportedExtensionLower,
 	Credit,
-} from '../../module.js';
+	Disc,
+	SrcsetSource,
+	ImageSource,
+} from '../../module';
 import {
 	albumTrackCID,
 	urlForThing,
@@ -53,6 +56,53 @@ const audio = ((): HTMLAudioElement => {
 
 	return audio;
 })();
+const preloadAlbumDiscArtPromises: WeakMap<Album, Promise<string[]>> = new WeakMap();
+const completed: WeakSet<Promise<string[]>> = new WeakSet();
+
+async function preloadAlbumDiscArt(album: Album): Promise<string[]> {
+	if ( ! preloadAlbumDiscArtPromises.has(album)) {
+		const promise: Promise<string[]> = new Promise((yup) => {
+			Promise.all(album.discs.reduce(
+				(
+					sources: Array<SrcsetSource>,
+					disc: Disc
+				): Array<SrcsetSource> => {
+					disc.art.forEach((source: ImageSource): void => {
+						sources.push(source);
+
+						source.srcset.forEach((srcset) => {
+							sources.push(srcset);
+						});
+					});
+
+					return sources;
+				},
+				[]
+			).map((source: SrcsetSource): Promise<string> => {
+				return urlForThing(source, album.path + source.subpath);
+			})).then((done) => {
+
+				completed.add(promise);
+
+				yup(done);
+			});
+		});
+
+		preloadAlbumDiscArtPromises.set(album, promise);
+
+		return [];
+	} else {
+		const promise = preloadAlbumDiscArtPromises.get(
+			album
+		) as Promise<string[]>;
+
+		if ( ! completed.has(promise)) {
+			return [];
+		}
+
+		return await promise;
+	}
+}
 
 let trackMostRecentlyAttemptedToPlay: string|undefined;
 
@@ -69,12 +119,13 @@ function play(src: string): void {
 	audio.play();
 }
 
-async function AlbumToMediaMetadataArt(
-	album: AlbumWithArt
+async function DiscToMediaMetadataArt(
+	album: Album,
+	disc: Disc
 ): Promise<Array<MediaMetadataArtwork>> {
 	const out: Array<MediaMetadataArtwork> = [];
 
-	return await Promise.all(album.art.covers.concat([album.art.background]).map(
+	return await Promise.all(disc.art.map(
 		async (art): Promise<MediaMetadataArtwork> => {
 			const path = album.path + art.subpath;
 			const match = /.(png|jpe?g)$/i.exec(path);
@@ -102,6 +153,19 @@ async function AlbumToMediaMetadataArt(
 	return out;
 }
 
+async function MaybeDiscToMediaMetadataArt(
+	album: Album,
+	disc: Disc
+): Promise<Array<MediaMetadataArtwork>> {
+	const maybe = await preloadAlbumDiscArt(album);
+
+	if (maybe.length > 0) {
+		return await DiscToMediaMetadataArt(album, disc);
+	}
+
+	return [];
+}
+
 function oxfordComma(...items: Array<string>): string {
 	const formatted = (new (Intl as any).ListFormat(
 		'en',
@@ -120,6 +184,7 @@ function oxfordComma(...items: Array<string>): string {
 
 function AlbumViewClickFactory(
 	album: Album,
+	disc: Disc,
 	track: Track
 ): (e: Event) => Promise<void> {
 	const path = album.path + track.subpath;
@@ -171,10 +236,11 @@ function AlbumViewClickFactory(
 					title: track.name,
 					album: album.name,
 					artwork: (
-						! ('art' in album)
+						(disc.art.length < 1)
 							? []
-							: await AlbumToMediaMetadataArt(
-								album as AlbumWithArt
+							: await MaybeDiscToMediaMetadataArt(
+								album,
+								disc
 							)
 					),
 				});
@@ -274,6 +340,7 @@ function AlbumView(album: Album): HTMLElement {
 								}"
 									@click=${AlbumViewClickFactory(
 										album,
+										disc,
 										track
 									)}
 								>⏯</button>

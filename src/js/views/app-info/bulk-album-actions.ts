@@ -22,7 +22,10 @@ import {
 import {
 	yieldPlaceholderThenPicture as baseYieldPlaceholderThenPicture,
 } from '../../utilities/elements.js';
-import { AlbumWithArt } from '../../../module';
+import {
+	AlbumWithArt,
+	ImageSource
+} from '../../../module';
 
 export const appInfo = ((): HTMLElement => {
 	const appInfo = document.createElement('main');
@@ -503,23 +506,26 @@ export async function* yieldBulkAlbumAction(
 		)
 	);
 
-	if ('art' in album) {
-		imageSourcesForAlbum.push((album as AlbumWithArt).art.background);
-	}
-
-	Object.values(album.discs).forEach((disc) => {
-		disc.tracks.forEach((track) => {
-			pathsForApp.push(album.path + track.subpath);
-		});
-	});
-
-	imageSourcesForAlbum.forEach((source) => {
+	function pushImageSource(source: ImageSource) {
 		pathsForApp.push(album.path + source.subpath);
 
 		source.srcset.forEach((srcset) => {
 			pathsForApp.push(album.path + srcset.subpath);
 		});
+	}
+
+	if ('art' in album) {
+		imageSourcesForAlbum.push((album as AlbumWithArt).art.background);
+	}
+
+	Object.values(album.discs).forEach((disc) => {
+		disc.art.forEach(pushImageSource);
+		disc.tracks.forEach((track) => {
+			pathsForApp.push(album.path + track.subpath);
+		});
 	});
+
+	imageSourcesForAlbum.forEach(pushImageSource);
 
 	const filesForApp = Object.fromEntries(
 		Object.entries(filesInIpfs).filter((entry) => {
