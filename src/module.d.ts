@@ -6,6 +6,8 @@ export {
 	AlbumWithArt,
 	Track,
 	BrokenTrack,
+	Credit,
+	GroupCredit,
 } from './data/module';
 
 export interface IpfsGlobal {

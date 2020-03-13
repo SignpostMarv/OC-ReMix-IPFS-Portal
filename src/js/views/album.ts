@@ -7,6 +7,7 @@ import {
 	MediaMetadataArtwork,
 	SupportedExtensionUpperOrLower,
 	SupportedExtensionLower,
+	Credit,
 } from '../../module.js';
 import {
 	albumTrackCID,
@@ -101,6 +102,22 @@ async function AlbumToMediaMetadataArt(
 	return out;
 }
 
+function oxfordComma(...items: Array<string>): string {
+	const formatted = (new (Intl as any).ListFormat(
+		'en',
+		{
+			style: 'long',
+			type: 'conjunction',
+		})
+	).format(items);
+
+	if (items.length > 2) {
+		return formatted.replace(/([^ ]) and /, '$1, and ');
+	}
+
+	return formatted;
+}
+
 function AlbumViewClickFactory(
 	album: Album,
 	track: Track
@@ -140,7 +157,17 @@ function AlbumViewClickFactory(
 
 			if ('mediaSession' in navigator) {
 				const metadata = new (window as any).MediaMetadata({
-					artist: '',
+					artist: oxfordComma(...track.credits.map(
+						(credit: string|Credit): string => {
+							return ('string' === typeof credit)
+									? credit
+									: (
+										('string' === typeof credit.name)
+											? credit.name
+											: Object.values(credit)[0]
+									);
+						}
+					)),
 					title: track.name,
 					album: album.name,
 					artwork: (
@@ -189,6 +216,28 @@ function noFixAvailable(): TemplateResult {
 	`
 }
 
+function creditToTemplateResult(credit: string|Credit): TemplateResult {
+	return html`
+		<li>${
+			('string' === typeof credit)
+				? credit
+				: html`<a
+					rel="nofollow noopener"
+					href="${credit.url}"
+					target="_blank"
+				>${
+					('string' === typeof credit.name)
+						? html`${credit.name}`
+						: Object.entries(credit.name).map((entry) => {
+							const [lang, name] = entry;
+
+							return html`<span lang="${lang}">${name}</span>`;
+						})
+				}</a>`
+		}</li>
+	`;
+}
+
 function AlbumView(album: Album): HTMLElement {
 	if (views.has(album)) {
 		return views.get(album) as HTMLElement;
@@ -230,6 +279,15 @@ function AlbumView(album: Album): HTMLElement {
 								>⏯</button>
 								<span>
 								${track.name}
+								${
+									(track.credits.length < 1)
+										? ''
+										: html`<ul class="credits">${
+											track.credits.map(
+												creditToTemplateResult
+											)
+										}</ul>`
+								}
 								</span>
 								${
 									(
