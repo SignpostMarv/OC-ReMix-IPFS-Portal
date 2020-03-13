@@ -112,7 +112,7 @@ function oxfordComma(...items: Array<string>): string {
 	).format(items);
 
 	if (items.length > 2) {
-		return formatted.replace(/([^ ]) and /, '$1, and ');
+		return formatted.replace(/([^ ]), and /, '$1, and ');
 	}
 
 	return formatted;
@@ -164,7 +164,7 @@ function AlbumViewClickFactory(
 									: (
 										('string' === typeof credit.name)
 											? credit.name
-											: Object.values(credit)[0]
+											: Object.values(credit.name)[0]
 									);
 						}
 					)),
