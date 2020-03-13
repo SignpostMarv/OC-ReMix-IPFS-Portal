@@ -506,7 +506,7 @@ export async function* yieldBulkAlbumAction(
 		)
 	);
 
-	function pushImageSource(source: ImageSource) {
+	function pushImageSource(source: ImageSource): void {
 		pathsForApp.push(album.path + source.subpath);
 
 		source.srcset.forEach((srcset) => {
