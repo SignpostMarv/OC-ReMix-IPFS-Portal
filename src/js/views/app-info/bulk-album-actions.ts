@@ -338,12 +338,8 @@ export function GetAllFactory(
 			filesForApp
 		);
 
-		for await (
-			const _blob of Object.keys(notCachedForApp).map(
-				(path) => {
-					return fetchBlobViaCacheOrIpfs(path);
-			})
-		) {
+		await Promise.all(Object.keys(notCachedForApp).map(async (path) => {
+			return fetchBlobViaCacheOrIpfs(path).then((result) => {
 			++numberOfCachedForIpfs;
 			++numberOfCachedForApp;
 
@@ -354,7 +350,9 @@ export function GetAllFactory(
 			progressForIpfs.value = (
 				numberOfCachedForIpfs / numberOfFilesInIpfs
 			);
-		}
+				return result;
+			});
+		}));
 
 		button.disabled = true;
 		entry.classList.remove('active');
@@ -443,9 +441,8 @@ export function RemoveAllFactory(
 			return cache.delete(new Request('/ipfs/' + cid));
 		};
 
-		for await (
-			const _blob of Object.keys(cachedForApp).map(deleteFromCacheByPath)
-		) {
+		await Promise.all(Object.keys(cachedForApp).map((path: string) => {
+			return deleteFromCacheByPath(path).then((maybe: boolean) => {
 			--numberOfCachedForIpfs;
 			--numberOfCachedForApp;
 
@@ -456,7 +453,9 @@ export function RemoveAllFactory(
 			progressForIpfs.value = (
 				numberOfCachedForIpfs / numberOfFilesInIpfs
 			);
-		}
+				return maybe;
+			});
+		}));
 
 		numberOfCachedForIpfs = await numberOfFilesInCache(
 			filesInIpfs
@@ -467,15 +466,17 @@ export function RemoveAllFactory(
 			true
 		);
 
-		for await (
-			const _blob of Object.keys(cachedInIpfs).map(deleteFromCacheByPath)
-		) {
+		await Promise.all(Object.keys(cachedInIpfs).map((path: string) => {
+			return deleteFromCacheByPath(path).then((maybe: boolean) => {
 			--numberOfCachedForIpfs;
 
 			progressForIpfs.value = (
 				numberOfCachedForIpfs / numberOfFilesInIpfs
 			);
-		}
+
+				return maybe;
+			});
+		}));
 
 		button.disabled = true;
 		entry.classList.remove('active');
