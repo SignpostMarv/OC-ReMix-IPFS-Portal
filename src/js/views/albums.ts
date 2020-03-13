@@ -14,7 +14,7 @@ import {
 } from 'lit-html/directives/async-replace.js';
 import {
 	Albums,
-} from 'ocremix-ipfs-data/src/data/albums.js';
+} from 'ocremix-data/src/data/albums.js';
 import {
 	yieldPlaceholderThenPicture,
 	updateTitleSuffix,

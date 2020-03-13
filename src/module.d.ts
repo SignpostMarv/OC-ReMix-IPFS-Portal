@@ -1,4 +1,4 @@
-export * from 'ocremix-ipfs-data/src/module';
+export * from 'ocremix-data/src/module';
 
 export interface IpfsGlobal {
 	create: () => Promise<IpfsInstance>;

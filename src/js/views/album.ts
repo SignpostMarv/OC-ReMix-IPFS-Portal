@@ -15,7 +15,7 @@ import {
 } from '../data.js';
 import {
 	Albums,
-} from 'ocremix-ipfs-data/src/data/albums.js';
+} from 'ocremix-data/src/data/albums.js';
 import {
 	html,
 	render,
@@ -255,13 +255,13 @@ function AlbumView(album: Album): HTMLElement {
 					asyncAppend(yieldAlbumCovers(album as AlbumWithArt))
 				}</ol>`
 		}
-		<dl class="discs">${Object.entries(album.discs).map((disc) => {
-			const [discName, tracks] = disc;
-
+		<dl class="discs">${album.discs.sort((a, b) => {
+			return a.index - b.index;
+		}).map((disc) => {
 			return html`
-				<dt>${discName}</dt>
+				<dt>${disc.name}</dt>
 				<dd>
-					<ol class="tracks">${tracks.map(
+					<ol class="tracks">${disc.tracks.map(
 						(track): TemplateResult => {
 						const filename = track.subpath.replace(/^(.+\/)*/, '');
 

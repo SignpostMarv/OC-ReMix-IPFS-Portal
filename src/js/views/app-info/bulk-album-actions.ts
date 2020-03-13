@@ -10,7 +10,7 @@ import {
 } from '../../data.js';
 import {
 	Albums
-} from 'ocremix-ipfs-data/src/data/albums.js';
+} from 'ocremix-data/src/data/albums.js';
 import {
 	html,
 	render,
@@ -507,8 +507,8 @@ export async function* yieldBulkAlbumAction(
 		imageSourcesForAlbum.push((album as AlbumWithArt).art.background);
 	}
 
-	Object.values(album.discs).forEach((tracks) => {
-		tracks.forEach((track) => {
+	Object.values(album.discs).forEach((disc) => {
+		disc.tracks.forEach((track) => {
 			pathsForApp.push(album.path + track.subpath);
 		});
 	});
