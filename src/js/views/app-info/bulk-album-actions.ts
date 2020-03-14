@@ -6,7 +6,7 @@ import {
 	ocremixCache,
 	fetchBlobViaCacheOrIpfs,
 	pathCID,
-	ocremixCID,
+	cids,
 } from '../../data.js';
 import {
 	Albums
@@ -504,7 +504,7 @@ export async function* yieldBulkAlbumAction(
 			: [];
 
 	const filesInIpfs = Object.fromEntries(
-		Object.entries(await ocremixCID).filter(
+		Object.entries(await cids()).filter(
 			(entry) => {
 				return entry[0].startsWith(album.path);
 			}

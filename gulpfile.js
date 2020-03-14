@@ -13,8 +13,9 @@ const sourcemaps = require('gulp-sourcemaps');
 const uglify = require('gulp-uglify-es').default;
 const inline_source = require('gulp-inline-source');
 const rollup = require('rollup');
+const rollupCommonJs = require('@rollup/plugin-commonjs');
 const rollupNodeResolve = require('@rollup/plugin-node-resolve');
-const cleanup = require('rollup-plugin-cleanup');
+const rollupJsonResolve = require('@rollup/plugin-json');
 const merge = require('merge-stream');
 
 const postcss_plugins = {
@@ -88,7 +89,8 @@ gulp.task('html', () => {
 
 const makeTypescript = (
 	glob,
-	filterOptions = ['**'],
+	newerDest,
+	filterOptions = ['**', '!**/*.d.ts'],
 	projectFile = './tsconfig.json'
 ) => {
 	return gulp.src(
@@ -106,7 +108,7 @@ const makeTypescript = (
 	).pipe(
 		eslint.failAfterError()
 	).pipe(newer({
-		dest: './tmp/',
+		dest: newerDest,
 		ext: '.js',
 	})).pipe(
 		typescript.createProject(projectFile)()
@@ -115,15 +117,18 @@ const makeTypescript = (
 
 gulp.task('ts', () => {
 	const ts = makeTypescript(
-		'./src/{js,data}/**/*.ts',
+		'./src/js/**/*.ts',
+		'./src/js/',
 		[
 			'**',
 			'!**/*.worker.ts',
+			'!**/*.d.ts',
 		]
 	);
 
 	const workers = makeTypescript(
-		'./src/{js,data}/**/*.worker.ts',
+		'./src/js/**/*.worker.ts',
+		'./src/js/',
 		[],
 		'./tsconfig.workers.json'
 	);
@@ -136,55 +141,8 @@ gulp.task('ts', () => {
 	]).pipe(
 		sourcemaps.write('./')
 	).pipe(gulp.dest(
-		'./tmp/'
+		'./src/js/'
 	));
-});
-
-gulp.task('sync--ipfs--build-module', () => {
-	return gulp.src('./node_modules/ipfs/dist/index.js').pipe(
-		sourcemaps.init({loadMaps: true})
-	).pipe(
-		rename('index.module.js')
-	).pipe(
-		newer('./dist/ipfs/')
-	).pipe(
-		replace(
-			'(function webpackUniversalModuleDefinition(root, factory) {',
-			(
-				'const notWindow = {};' +
-				'\n' +
-				'(function webpackUniversalModuleDefinition(root, factory) {'
-			)
-		)
-	).pipe(
-		replace(
-			'})(window, function() {',
-			'})(notWindow, function() {'
-		)
-	).pipe(
-		replace(
-			(
-				'/******/ ]);' +
-				'\n' +
-				'});'
-			),
-			(
-				'/******/ ]);' +
-				'\n' +
-				'});' +
-				'\n' +
-				'export const Ipfs = notWindow[\'Ipfs\'];' +
-				'\n' +
-				'export default notWindow[\'Ipfs\'];'
-			)
-		)
-	).pipe(
-		uglify()
-	).pipe(
-		sourcemaps.write('./')
-	).pipe(
-		gulp.dest('./dist/ipfs/')
-	)
 });
 
 gulp.task('sync', () => {
@@ -227,13 +185,15 @@ gulp.task('sync--data', () => {
 
 gulp.task('uglify', () => {
 	return gulp.src(
-		'./tmp/{js}/**/*.js'
+		'./tmp/**/*.js'
 	).pipe(
 		newer('./dist/')
 	).pipe(
 		sourcemaps.init({loadMaps: true})
 	).pipe(
-		uglify()
+		uglify({
+			module: true,
+		})
 	).pipe(
 		sourcemaps.write('./')
 	).pipe(gulp.dest('./dist/'));
@@ -241,17 +201,32 @@ gulp.task('uglify', () => {
 
 gulp.task('rollup', async () => {
 	const bundle = await rollup.rollup({
-		input: './tmp/js/load.js',
+		input: './src/js/load.js',
 		plugins: [
 			rollupNodeResolve(),
-			cleanup(),
+			rollupJsonResolve(),
 		],
 	});
 
 	return await bundle.write({
 		sourcemap: true,
 		format: 'es',
-		dir: './dist/js/',
+		dir: './tmp/js/',
+	});
+});
+
+gulp.task('sync--ipfs--build-module', async () => {
+	const bundle = await rollup.rollup({
+		input: './node_modules/ipfs/dist/index.js',
+		plugins: [
+			rollupCommonJs(),
+		],
+	});
+
+	return await bundle.write({
+		sourcemap: true,
+		format: 'es',
+		dir: './src/ipfs/',
 	});
 });
 
@@ -262,8 +237,8 @@ gulp.task('default', gulp.series(...[
 		'css--style',
 		'ts',
 		'sync--ipfs--build-module',
-		'sync--data',
 	]),
 	'rollup',
+	'uglify',
 	'sync--html',
 ]));

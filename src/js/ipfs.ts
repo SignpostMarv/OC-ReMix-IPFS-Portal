@@ -1,6 +1,5 @@
 import {
 	IpfsInstance,
-	IpfsGlobal,
 } from '../module';
 
 let _ipfs: Promise<IpfsInstance>|undefined;
@@ -33,9 +32,9 @@ export function GetIpfsInstance(): Promise<IpfsInstance> {
 		_ipfs = new Promise((yup): void => {
 			(async (src): Promise<void> => {
 				yup (
-					await ((await import(src)).Ipfs as IpfsGlobal).create()
+					await ((await import(src)).default).create()
 				);
-			})('/ipfs/index.module.js');
+			})('../ipfs/index.js');
 		});
 	}
 

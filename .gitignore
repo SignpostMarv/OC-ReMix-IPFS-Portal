@@ -4,3 +4,6 @@
 /src/data/ocremix-cids.json
 /src/lit-html/
 /src/data/
+/src/**/*.js
+/src/**/*.d.ts
+/src/**/*.map

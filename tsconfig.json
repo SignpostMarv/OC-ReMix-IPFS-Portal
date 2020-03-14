@@ -29,6 +29,7 @@
 		"declarationDir": "./",
 		"baseUrl": "./",
 		"rootDir": "./",
+		"resolveJsonModule": true,
 		"target": "ESNext"
 	},
 	"exclude": [

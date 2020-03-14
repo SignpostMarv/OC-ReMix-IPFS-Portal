@@ -8,24 +8,20 @@ import {
 import {GetIpfsInstance} from './ipfs.js';
 import {mimeType} from './mimeType.js';
 
-export const ocremixCID = fetch(
-	'../data/ocremix-cids.min.json'
-).then((r) => {
-	return r.json();
-}) as Promise<{[path: string]: string}>;
+export async function cids(): Promise<{[path: string]: string}> {
+	const {
+		cids:_cids
+	} = await import('./data/cids.js');
 
-const cids: Promise<{[path: string]: string}> = new Promise((yup) => {
-	(async(): Promise<void> => {
-		yup(await ocremixCID);
-	})();
-});
+	return await _cids();
+}
 
 const blobs: {[key: string]: Promise<Blob>} = {};
 const urls: WeakMap<Track|SrcsetSource, Promise<string>> = new WeakMap();
 
 export async function pathCID(path: string): Promise<string>
 {
-	const ocremix = await(cids);
+	const ocremix = await cids();
 
 	if ( ! (path in ocremix)) {
 		throw new Error(
@@ -67,7 +63,7 @@ export async function fetchBlobViaCacheOrIpfs(
 			ocremix,
 		] = await Promise.all([
 			ocremixCache(),
-			cids,
+			cids(),
 		]);
 		const url = '/ipfs/' + ocremix[path];
 		const faux = new Request(url);
