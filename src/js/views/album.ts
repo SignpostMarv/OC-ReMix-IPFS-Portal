@@ -112,11 +112,11 @@ let trackMostRecentlyAttemptedToPlay: string|undefined;
 document.body.appendChild(audio);
 
 async function play(src: string): Promise<void> {
-	console.log(src);
 	if (audio.src !== src) {
 		if (isPlaying) {
-		audio.pause();
+			audio.pause();
 		}
+
 		audio.src = src;
 	}
 
@@ -126,6 +126,7 @@ async function play(src: string): Promise<void> {
 function resetMediaSessionActionHandlers(): void {
 	if ('mediaSession' in navigator) {
 		const mediaSession = (navigator as MediaSessionNavigator).mediaSession;
+
 		[
 			'play',
 			'pause',
@@ -244,9 +245,7 @@ async function queueUpMediaSessionActionHandlers(
 			),
 		});
 
-		(
-			navigator as MediaSessionNavigator
-		).mediaSession.metadata = metadata;
+		mediaSession.metadata = metadata;
 
 		mediaSession.setActionHandler('play', async () => {
 			if (currentTrack === track && ! isPlaying) {
@@ -309,28 +308,28 @@ async function AttemptToPlayTrackFromAlbum(
 		beforeAttempt();
 	}
 
-		const cid = await albumTrackCID(album, track);
+	const cid = await albumTrackCID(album, track);
 
 	if (beforeFetchUrl) {
 		await beforeFetchUrl();
 	}
 
-		trackMostRecentlyAttemptedToPlay = cid;
+	trackMostRecentlyAttemptedToPlay = cid;
 
-		const trackUrl = await urlForThing(track, path);
+	const trackUrl = await urlForThing(track, path);
 
-		if (cid === trackMostRecentlyAttemptedToPlay) {
-			currentTrack = track;
+	if (cid === trackMostRecentlyAttemptedToPlay) {
+		currentTrack = track;
 
-			await play(trackUrl);
+		await play(trackUrl);
 
-			await queueUpMediaSessionActionHandlers(
-				album,
-				disc,
-				track,
-				AttemptToPlayTrackFromAlbum
-			);
-		}
+		await queueUpMediaSessionActionHandlers(
+			album,
+			disc,
+			track,
+			AttemptToPlayTrackFromAlbum
+		);
+	}
 }
 
 function AlbumViewClickFactory(
@@ -356,12 +355,12 @@ function AlbumViewClickFactory(
 			disc,
 			track,
 			(): void => {
-		button.disabled = true;
-		button.textContent = '⏳';
+				button.disabled = true;
+				button.textContent = '⏳';
 			},
 			async (): Promise<void> => {
-		button.disabled = false;
-		button.textContent = '⏯';
+				button.disabled = false;
+				button.textContent = '⏯';
 			}
 		);
 	};
