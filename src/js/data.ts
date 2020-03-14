@@ -10,8 +10,8 @@ import {mimeType} from './mimeType.js';
 
 export const ocremixCID = fetch(
 	'../data/ocremix-cids.min.json'
-		).then((r) => {
-			return r.json();
+).then((r) => {
+	return r.json();
 }) as Promise<{[path: string]: string}>;
 
 const cids: Promise<{[path: string]: string}> = new Promise((yup) => {
