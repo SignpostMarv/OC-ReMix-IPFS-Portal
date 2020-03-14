@@ -111,7 +111,7 @@ let trackMostRecentlyAttemptedToPlay: string|undefined;
 
 document.body.appendChild(audio);
 
-function play(src: string): void {
+async function play(src: string): Promise<void> {
 	console.log(src);
 	if (audio.src !== src) {
 		if (isPlaying) {
@@ -119,8 +119,42 @@ function play(src: string): void {
 		}
 		audio.src = src;
 	}
-	audio.play();
+
+	return audio.play();
 }
+
+function resetMediaSessionActionHandlers(): void {
+	if ('mediaSession' in navigator) {
+		const mediaSession = (navigator as MediaSessionNavigator).mediaSession;
+		[
+			'play',
+			'pause',
+			'seekbackward',
+			'seekforward',
+			'previoustrack',
+			'nexttrack',
+		].forEach((type) => {
+			mediaSession.setActionHandler(type, null);
+		});
+	}
+}
+
+function oxfordComma(...items: Array<string>): string {
+	const formatted = (new (Intl as any).ListFormat(
+		'en',
+		{
+			style: 'long',
+			type: 'conjunction',
+		})
+	).format(items);
+
+	if (items.length > 2) {
+		return formatted.replace(/([^ ]), and /, '$1, and ');
+	}
+
+	return formatted;
+}
+
 
 async function DiscToMediaMetadataArt(
 	album: Album,
@@ -169,20 +203,134 @@ async function MaybeDiscToMediaMetadataArt(
 	return [];
 }
 
-function oxfordComma(...items: Array<string>): string {
-	const formatted = (new (Intl as any).ListFormat(
-		'en',
-		{
-			style: 'long',
-			type: 'conjunction',
-		})
-	).format(items);
+async function queueUpMediaSessionActionHandlers(
+	album: Album,
+	disc: Disc,
+	track: Track,
+	playOtherTrack: ((
+		album: Album,
+		disc: Disc,
+		track: Track,
+		beforeAttempt: undefined|(() => void),
+		beforeFetchUrl: undefined|(() => Promise<void>)
+	) => Promise<void>)
+): Promise<void> {
+	resetMediaSessionActionHandlers();
 
-	if (items.length > 2) {
-		return formatted.replace(/([^ ]), and /, '$1, and ');
+	if ('mediaSession' in navigator) {
+		const mediaSession = (navigator as MediaSessionNavigator).mediaSession;
+
+		const metadata = new (window as any).MediaMetadata({
+			artist: oxfordComma(...track.credits.map(
+				(credit: string|Credit): string => {
+					return ('string' === typeof credit)
+							? credit
+							: (
+								('string' === typeof credit.name)
+									? credit.name
+									: Object.values(credit.name)[0]
+							);
+				}
+			)),
+			title: track.name,
+			album: album.name,
+			artwork: (
+				(disc.art.length < 1)
+					? []
+					: await MaybeDiscToMediaMetadataArt(
+						album,
+						disc
+					)
+			),
+		});
+
+		(
+			navigator as MediaSessionNavigator
+		).mediaSession.metadata = metadata;
+
+		mediaSession.setActionHandler('play', async () => {
+			if (currentTrack === track && ! isPlaying) {
+				await audio.play();
+			}
+		});
+
+		mediaSession.setActionHandler('pause', async () => {
+			if (currentTrack === track && isPlaying) {
+				audio.pause();
+			}
+		});
+
+		const tracks: Track[] = [];
+
+		album.discs.forEach((disc) => {
+			tracks.push(...disc.tracks);
+		});
+
+		const position = tracks.indexOf(track);
+
+		if (position >= 0) {
+			if (position > 0) {
+				mediaSession.setActionHandler('previoustrack', async () => {
+					await playOtherTrack(
+						album,
+						disc,
+						tracks[position - 1],
+						undefined,
+						undefined
+					);
+				});
+			}
+
+			if (position < (tracks.length - 1)) {
+				mediaSession.setActionHandler('nexttrack', async () => {
+					await playOtherTrack(
+						album,
+						disc,
+						tracks[position + 1],
+						undefined,
+						undefined
+					);
+				});
+			}
+		}
+	}
+}
+
+async function AttemptToPlayTrackFromAlbum(
+	album: Album,
+	disc: Disc,
+	track: Track,
+	beforeAttempt: undefined|(() => void) = undefined,
+	beforeFetchUrl: undefined|(() => Promise<void>) = undefined
+): Promise<void> {
+	const path = album.path + track.subpath;
+
+	if (beforeAttempt) {
+		beforeAttempt();
 	}
 
-	return formatted;
+		const cid = await albumTrackCID(album, track);
+
+	if (beforeFetchUrl) {
+		await beforeFetchUrl();
+	}
+
+		trackMostRecentlyAttemptedToPlay = cid;
+
+		const trackUrl = await urlForThing(track, path);
+
+		if (cid === trackMostRecentlyAttemptedToPlay) {
+			currentTrack = track;
+
+			await play(trackUrl);
+
+			await queueUpMediaSessionActionHandlers(
+				album,
+				disc,
+				track,
+				AttemptToPlayTrackFromAlbum
+			);
+		}
 }
 
 function AlbumViewClickFactory(
@@ -190,8 +338,6 @@ function AlbumViewClickFactory(
 	disc: Disc,
 	track: Track
 ): (e: Event) => Promise<void> {
-	const path = album.path + track.subpath;
-
 	return async (e: Event): Promise<void> => {
 		const button = e.target as HTMLButtonElement;
 
@@ -205,53 +351,19 @@ function AlbumViewClickFactory(
 			return;
 		}
 
-		const cid = await albumTrackCID(album, track);
-
+		await AttemptToPlayTrackFromAlbum(
+			album,
+			disc,
+			track,
+			(): void => {
 		button.disabled = true;
 		button.textContent = '⏳';
-		trackMostRecentlyAttemptedToPlay = cid;
-
-		const trackUrl = await urlForThing(
-			track,
-			path
-		);
-
+			},
+			async (): Promise<void> => {
 		button.disabled = false;
 		button.textContent = '⏯';
-
-		if (cid === trackMostRecentlyAttemptedToPlay) {
-			currentTrack = track;
-			play(trackUrl);
-
-			if ('mediaSession' in navigator) {
-				const metadata = new (window as any).MediaMetadata({
-					artist: oxfordComma(...track.credits.map(
-						(credit: string|Credit): string => {
-							return ('string' === typeof credit)
-									? credit
-									: (
-										('string' === typeof credit.name)
-											? credit.name
-											: Object.values(credit.name)[0]
-									);
-						}
-					)),
-					title: track.name,
-					album: album.name,
-					artwork: (
-						(disc.art.length < 1)
-							? []
-							: await MaybeDiscToMediaMetadataArt(
-								album,
-								disc
-							)
-					),
-				});
-				(
-					navigator as MediaSessionNavigator
-				).mediaSession.metadata = metadata;
 			}
-		}
+		);
 	};
 }
 

@@ -30,7 +30,7 @@ export interface MediaSessionNavigator extends Navigator {
 export interface MediaSession {
 	metadata: MediaMetadata;
 	playbackState: 'none'|'paused'|'playing';
-	setActionHandler: (type:string, callback: () => void) => void;
+	setActionHandler: (type:string, callback: null|(() => void)) => void;
 }
 
 export interface MediaMetadataArtwork {
