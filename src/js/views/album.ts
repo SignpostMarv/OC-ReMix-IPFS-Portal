@@ -464,7 +464,7 @@ function AlbumView(album: Album, cids: CIDMap): HTMLElement {
 									type="button"
 									aria-label="Play or Pause ${
 										track.name
-								}"
+									}"
 									@click=${AlbumViewClickFactory(
 										album,
 										disc,
