@@ -121,6 +121,8 @@ header
 {
 	padding-bottom: 1rem ;
 	display: flex ;
+	position: sticky ;
+	top: 1rem ;
 
 	nav
 	{
@@ -399,7 +401,15 @@ table
 		flex-direction: row;
 		overflow: auto;
 		scroll-snap-type: x mandatory;
-		height: calc(100vh - 10rem) ;
+
+		@media (min-width: 768px)
+		{
+			position: fixed ;
+			top: 3rem ;
+			left: 0 ;
+			right: 50% ;
+			bottom: 5rem ;
+		}
 
 		> li
 		{
@@ -478,6 +488,11 @@ table
 
 	ocremix-track-queue
 	{
+		@media(min-width: 768px)
+		{
+			margin-left: 50% ;
+		}
+
 		ocremix-track-queue-group + ocremix-track-queue-group
 		{
 			margin-top: 1rem ;
