@@ -1,6 +1,7 @@
 import {
 	Album,
 	AlbumWithArt,
+	/*
 	Track,
 	BrokenTrack,
 	MediaSessionNavigator,
@@ -11,26 +12,37 @@ import {
 	Disc,
 	SrcsetSource,
 	ImageSource,
+	*/
 	CIDMap,
+	Track,
+	ImageSource,
 } from '../../module';
+/*
 import {
 	albumTrackCID,
 	urlForThing,
 } from '../data.js';
+*/
 import {
 	Albums,
 } from '../data/albums.js';
 import {
 	html,
-	TemplateResult,
 	render,
 } from 'lit-html';
+/*
 import {
 	mimeType,
 } from '../mimeType.js';
+*/
+import {
+	PlayTarget
+} from '../utilities/play-target';
 
+/*
 let currentTrack: Track|undefined;
 let isPlaying = false;
+*/
 
 const views: WeakMap<Album, HTMLElement> = new WeakMap();
 const audio = ((): HTMLAudioElement => {
@@ -39,6 +51,7 @@ const audio = ((): HTMLAudioElement => {
 	audio.controls = true;
 	audio.src=  '';
 
+	/*
 	audio.addEventListener('ended', () => {
 		currentTrack = undefined;
 	});
@@ -48,9 +61,14 @@ const audio = ((): HTMLAudioElement => {
 	audio.onpause = (): void => {
 		isPlaying = false;
 	}
+	*/
 
 	return audio;
 })();
+
+const playTarget = new PlayTarget(audio, false);
+
+/*
 const preloadAlbumDiscArtPromises: WeakMap<
 	Album,
 	Promise<string[]>
@@ -106,9 +124,11 @@ async function preloadAlbumDiscArt(
 }
 
 let trackMostRecentlyAttemptedToPlay: string|undefined;
+*/
 
 document.body.appendChild(audio);
 
+/*
 async function play(src: string): Promise<void> {
 	if (audio.src !== src) {
 		if (isPlaying) {
@@ -153,7 +173,6 @@ function oxfordComma(...items: Array<string>): string {
 
 	return formatted;
 }
-
 
 async function DiscToMediaMetadataArt(
 	disc: Disc,
@@ -298,133 +317,7 @@ async function queueUpMediaSessionActionHandlers(
 		}
 	}
 }
-
-async function AttemptToPlayTrackFromAlbum(
-	album: Album,
-	disc: Disc,
-	track: Track,
-	cids: CIDMap,
-	beforeAttempt: undefined|(() => void) = undefined,
-	beforeFetchUrl: undefined|(() => Promise<void>) = undefined
-): Promise<void> {
-	const path = track.subpath;
-
-	if (beforeAttempt) {
-		beforeAttempt();
-	}
-
-	const cid = await albumTrackCID(track, cids);
-
-	if (beforeFetchUrl) {
-		await beforeFetchUrl();
-	}
-
-	trackMostRecentlyAttemptedToPlay = cid;
-
-	const trackUrl = await urlForThing(track, path, cids);
-
-	if (cid === trackMostRecentlyAttemptedToPlay) {
-		currentTrack = track;
-
-		await play(trackUrl);
-
-		await queueUpMediaSessionActionHandlers(
-			album,
-			disc,
-			track,
-			cids,
-			AttemptToPlayTrackFromAlbum
-		);
-	}
-}
-
-function AlbumViewClickFactory(
-	album: Album,
-	disc: Disc,
-	track: Track,
-	cids: CIDMap
-): (e: Event) => Promise<void> {
-	return async (e: Event): Promise<void> => {
-		const button = e.target as HTMLButtonElement;
-
-		if (currentTrack === track) {
-			if (isPlaying) {
-			audio.pause();
-			}
-			button.textContent = '⏯';
-			currentTrack = undefined;
-
-			return;
-		}
-
-		await AttemptToPlayTrackFromAlbum(
-			album,
-			disc,
-			track,
-			cids,
-			(): void => {
-				button.disabled = true;
-				button.textContent = '⏳';
-			},
-			async (): Promise<void> => {
-				button.disabled = false;
-				button.textContent = '⏯';
-			}
-		);
-	};
-}
-
-function AlbumViewDownloadFactory(
-	track: Track,
-	cids: CIDMap
-): (e: Event) => Promise<void> {
-	return async (e: Event): Promise<void> => {
-		const button = e.target as HTMLButtonElement;
-		const download = button.nextElementSibling;
-
-		if ( ! (download instanceof HTMLAnchorElement)) {
-			throw new Error('Could not find download button!');
-		}
-		download.textContent = '⏳';
-		button.disabled = true;
-		download.href = await urlForThing(track, track.subpath, cids);
-		download.textContent = '🔽';
-	};
-}
-
-function noFixAvailable(): TemplateResult {
-	return html`
-		<span
-			class="as-button"
-			title="${
-				'This track is known to be broken' +
-				', but no fix is currently available.'
-			}"
-		>⚠</span>
-	`
-}
-
-function creditToTemplateResult(credit: string|Credit): TemplateResult {
-	return html`
-		<li>${
-			('string' === typeof credit)
-				? credit
-				: html`<a
-					rel="nofollow noopener"
-					href="${credit.url}"
-					target="_blank"
-				>${
-					('string' === typeof credit.name)
-						? html`${credit.name}`
-						: Object.entries(credit.name).map((entry) => {
-							const [lang, name] = entry;
-
-							return html`<span lang="${lang}">${name}</span>`;
-						})
-				}</a>`
-		}</li>
-	`;
-}
+*/
 
 function AlbumView(album: Album, cids: CIDMap): HTMLElement {
 	if (views.has(album)) {
@@ -448,73 +341,22 @@ function AlbumView(album: Album, cids: CIDMap): HTMLElement {
 					})
 				}</ol>`
 		}
-		<dl class="discs">${album.discs.sort((a, b) => {
+		<ocremix-track-queue
+			.target=${playTarget}
+		>${album.discs.sort((a, b) => {
 			return a.index - b.index;
 		}).map((disc) => {
 			return html`
-				<dt>${disc.name}</dt>
-				<dd>
-					<ol class="tracks">${disc.tracks.map(
-						(track): TemplateResult => {
-						const filename = track.subpath.replace(/^(.+\/)*/, '');
-
-						return html`
-							<li>
-								<button
-									type="button"
-									aria-label="Play or Pause ${
-										track.name
-									}"
-									@click=${AlbumViewClickFactory(
-										album,
-										disc,
-										track,
-										cids
-									)}
-								>⏯</button>
-								<span>
-								${track.name}
-								${
-									(track.credits.length < 1)
-										? ''
-										: html`<ul class="credits">${
-											track.credits.map(
-												creditToTemplateResult
-											)
-										}</ul>`
-								}
-								</span>
-								${
-									(
-										'fixAvailable' in track &&
-										! (track as BrokenTrack).fixAvailable
-									)
-										? noFixAvailable()
-										: ''
-								}
-								<button
-									type="button"
-									aria-label="Prepare download for ${
-										track.name
-									}"
-									title="Prepare Download"
-									@click=${AlbumViewDownloadFactory(
-										track,
-										cids
-									)}
-								>🔽</button>
-								<a
-									class="as-button"
-									download="${filename}"
-									title="Download ${filename}"
-								>⛔</a>
-							</li>
-						`;
+				<ocremix-track-queue-group
+					name="${disc.name}"
+					.tracks=${disc.tracks.map(
+						(track): [Track, Album, CIDMap, ImageSource[]] => {
+							return [track, album, cids, disc.art];
 						}
-					)}</ol>
-				</dd>
+					)}
+				></ocremix-track-queue-group>
 			`;
-		})}</dl>
+		})}</ocremix-track-queue>
 		${
 			! ('art' in album)
 				? ''

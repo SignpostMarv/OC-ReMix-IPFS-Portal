@@ -1,11 +1,11 @@
 import { handleView } from './views.js';
 
-export {
-	AlbumLink,
-} from './elements/album-link.js';
-export {
-	ImageSourceElement,
-} from './elements/image-source.js';
+export * from './elements/album-link.js';
+export * from './elements/image-source.js';
+export * from './elements/play-button.js';
+export * from './elements/download-button.js';
+export * from './elements/track.js';
+export * from './elements/queue.js';
 
 (async (): Promise<void> => {
 	[...document.head.querySelectorAll(

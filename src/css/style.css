@@ -110,7 +110,8 @@ h6
 }
 
 header,
-.view > dl,
+.view > .album,
+.view > ocremix-track-queue,
 .view > ol
 {
 	z-index: 2 ;
@@ -376,7 +377,7 @@ table
 	}
 
 	> .covers,
-	> .discs
+	> ocremix-track-queue
 	{
 		flex: 1 1 ;
 		position: relative ;
@@ -410,11 +411,14 @@ table
 			align-items: center ;
 		}
 
-		picture
+		ocremix-image
 		{
 			width: 60% ;
 			display: block ;
+		}
 
+		picture
+		{
 			> img
 			{
 				display: block ;
@@ -424,14 +428,14 @@ table
 		}
 	}
 
-	.discs,
+	ocremix-track-queue,
 	.tracks
 	{
 		padding: .5rem ;
 	}
 
-	.discs dt,
-	.tracks li
+	ocremix-track-queue header,
+	.tracks > ocremix-track
 	{
 		padding: .25rem ;
 		background: rgba(255, 255, 255, .5) ;
@@ -466,9 +470,15 @@ table
 		}
 	}
 
-	.discs
+	ocremix-track-queue,
+	ocremix-track-queue-group
 	{
-		dd + dt
+		display: block ;
+	}
+
+	ocremix-track-queue
+	{
+		ocremix-track-queue-group + ocremix-track-queue-group
 		{
 			margin-top: 1rem ;
 		}
@@ -481,19 +491,24 @@ table
 			margin-right: 1rem ;
 		}
 
-		> li
+		> ocremix-track
 		{
 			display: flex ;
 			flex-direction: row ;
 			align-items: center ;
 			overflow: hidden ;
 
+			&:not(:first-child)
+			{
+				margin-top: 1rem ;
+			}
+
 			> span:not([class])
 			{
 				margin-right: auto ;
 			}
 
-			button ~ button,
+			ocremix-download-button button,
 			[download]
 			{
 				transition:
@@ -502,7 +517,7 @@ table
 				;
 			}
 
-			button ~ button
+			ocremix-download-button button
 			{
 				transform: translateX(100%) ;
 				opacity: 1 ;
@@ -541,6 +556,11 @@ table
 
 			> li
 			{
+				&:not(:first-child)
+				{
+					margin-left: .5rem ;
+				}
+
 				&::before
 				{
 					content: '[' ;
