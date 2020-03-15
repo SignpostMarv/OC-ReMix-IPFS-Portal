@@ -23,8 +23,6 @@ import {
 import {
 	html,
 	TemplateResult,
-} from 'lit-element';
-import {
 	render,
 } from 'lit-html';
 import {
