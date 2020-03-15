@@ -38,10 +38,10 @@ async function AddAlbum(
 		! ('art' in album)
 			? album.id.replace(/^(.{4})(.{4})$/, '$1-$2')
 			: asyncReplace(yieldPlaceholderThenPicture(
-		'Loading...',
-		album,
-		(album as AlbumWithArt).art.covers[0]
-	))}</a>`;
+				'Loading...',
+				album,
+				(album as AlbumWithArt).art.covers[0]
+			))}</a>`;
 
 	return button;
 }
