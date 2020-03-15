@@ -189,13 +189,9 @@ gulp.task('uglify', () => {
 	).pipe(
 		newer('./dist/')
 	).pipe(
-		sourcemaps.init({loadMaps: true})
-	).pipe(
 		uglify({
 			module: true,
 		})
-	).pipe(
-		sourcemaps.write('./')
 	).pipe(gulp.dest('./dist/'));
 });
 
