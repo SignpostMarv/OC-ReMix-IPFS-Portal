@@ -10,9 +10,11 @@ import {
 } from 'lit-html/directives/async-replace';
 import {
 	ImageSource,
-} from 'ocremix-data/src/module';
-import { CIDMap } from '../../module';
-import { urlForThing } from '../data';
+	CIDMap,
+} from '../../module';
+import {
+	urlForThing,
+} from '../data';
 
 async function* maybeYieldPictureFromSource(
 	source: ImageSource,

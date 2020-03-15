@@ -1,19 +1,10 @@
-/*
 import {
-	Album
-} from '../module';
-*/
-
-import {
-	updateTitleSuffix
+	updateTitleSuffix,
 } from './utilities/elements.js';
 
 const albumHashRegex = /^#album\/(OCRA\d{4})$/;
 
 const views: Array<(hash: string) => Promise<HTMLElement|undefined>> = [];
-/*
-let currentAlbum: Album|undefined;
-*/
 
 views.push(async (hash: string): Promise<HTMLElement|undefined> => {
 	if ( ! /^#?$/.test(hash)) {

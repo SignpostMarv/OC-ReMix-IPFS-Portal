@@ -11,7 +11,9 @@ import {
 import {
 	Albums,
 } from '../data/albums';
-import { AlbumWithArt } from 'ocremix-data/src/module';
+import {
+	AlbumWithArt
+} from '../../module';
 
 async function* yieldPlaceholderThenMaybePicture(
 	link: AlbumLink,
