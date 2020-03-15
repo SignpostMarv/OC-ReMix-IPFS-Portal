@@ -1,6 +1,6 @@
 import {
-	Album,
 	ImageSource,
+	CIDMap,
 } from '../../module';
 import {
 	TemplateResult,
@@ -23,16 +23,17 @@ if ( ! title) {
 const initialTitle = title.textContent;
 
 export async function picture(
-	album: Album,
 	art: ImageSource,
+	ocremix: CIDMap,
 	className = ''
 ): Promise<HTMLPictureElement> {
-	const src = await urlForThing(art, album.path + art.subpath);
+	const src = await urlForThing(art, art.subpath, ocremix);
 	const srcset = await Promise.all(art.srcset.map(
 		async (srcset): Promise<string> => {
 			const srcsetSrc = await urlForThing(
 				srcset,
-				album.path + srcset.subpath
+				srcset.subpath,
+				ocremix
 			);
 
 			return srcsetSrc + ' ' + srcset.width.toString(10) + 'w';
@@ -61,20 +62,21 @@ export async function picture(
 
 export async function* yieldPlaceholderThenPicture(
 	placeholder: string,
-	album: AlbumWithArt,
-	art: ImageSource
+	art: ImageSource,
+	ocremix: CIDMap
 ): AsyncGenerator<string|HTMLPictureElement> {
 	yield placeholder;
 
-	yield await picture(album, art);
+	yield await picture(art, ocremix);
 }
 
 export async function* yieldAlbumCovers(
-	album: AlbumWithArt
+	album: AlbumWithArt,
+	ocremix: CIDMap
 ): AsyncGenerator<TemplateResult> {
 	for await (const appendPicture of album.art.covers.map(
 		(cover): Promise<HTMLPictureElement> => {
-			return picture(album, cover);
+			return picture(cover, ocremix);
 		}
 	)) {
 		yield html`<li>${appendPicture}</li>`;
@@ -82,9 +84,10 @@ export async function* yieldAlbumCovers(
 }
 
 export async function* yieldAlbumBackground(
-	album: AlbumWithArt
+	album: AlbumWithArt,
+	ocremix: CIDMap
 ): AsyncGenerator<HTMLPictureElement> {
-	yield await picture(album, album.art.background, 'bg');
+	yield await picture(album.art.background, ocremix, 'bg');
 }
 
 export function updateTitleSuffix(suffix: string): void {

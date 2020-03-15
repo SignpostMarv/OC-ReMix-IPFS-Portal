@@ -1,7 +1,4 @@
 import {
-	Album,
-} from '../../module';
-import {
 	html,
 	render,
 	TemplateResult,
@@ -13,8 +10,8 @@ import {
 	asyncReplace
 } from 'lit-html/directives/async-replace.js';
 import {
-	Albums,
-} from 'ocremix-data/src/data/albums.js';
+	Albums, AlbumResult,
+} from '../data/albums.js';
 import {
 	yieldPlaceholderThenPicture,
 	updateTitleSuffix,
@@ -26,9 +23,11 @@ const albums = document.createElement('main');
 albums.classList.add('albums');
 
 async function AddAlbum(
-	album: Album,
+	result: AlbumResult,
 	albumId: string
 ): Promise<TemplateResult> {
+	const { album, cids } = result;
+
 	const button = html`<a
 		class="entry"
 		href="#album/${albumId}"
@@ -39,8 +38,8 @@ async function AddAlbum(
 			? album.id.replace(/^(.{4})(.{4})$/, '$1-$2')
 			: asyncReplace(yieldPlaceholderThenPicture(
 				'Loading...',
-				album,
-				(album as AlbumWithArt).art.covers[0]
+				(album as AlbumWithArt).art.covers[0],
+				cids
 			))}</a>`;
 
 	return button;

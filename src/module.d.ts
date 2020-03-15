@@ -19,6 +19,8 @@ export type SupportedExtensionUpperOrLower = (
 	'JPEG'
 );
 
+export type CIDMap = {[path: string]: string};
+
 export interface MediaSessionNavigator extends Navigator {
 	mediaSession: MediaSession;
 }

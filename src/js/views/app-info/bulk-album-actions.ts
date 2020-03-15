@@ -1,16 +1,15 @@
 import {
-	Album,
+	Album, CIDMap,
 } from '../../../module';
 
 import {
 	ocremixCache,
 	fetchBlobViaCacheOrIpfs,
 	pathCID,
-	cids,
 } from '../../data.js';
 import {
 	Albums
-} from 'ocremix-data/src/data/albums.js';
+} from '../../data/albums.js';
 import {
 	html,
 	render,
@@ -44,7 +43,7 @@ export const storageEstimate = ((): HTMLTableElement => {
 })();
 
 export async function numberOfFilesInCache(
-	files: {[path: string]: string}
+	files: CIDMap
 ): Promise<number> {
 	let inCache = 0;
 
@@ -70,9 +69,9 @@ export async function numberOfFilesInCache(
 }
 
 export async function filesByCacheStatus(
-	files: {[path: string]: string},
+	files: CIDMap,
 	cached: boolean
-): Promise<{[path: string]: string}> {
+): Promise<CIDMap> {
 	const entries = Object.entries(files);
 	const filesOfExpectedStatus: Array<string> = [];
 
@@ -105,7 +104,7 @@ export async function filesByCacheStatus(
 
 async function manuallyUpdateProgress(
 	id: string,
-	files: {[path: string]: string},
+	files: CIDMap,
 	className: string,
 	title: string
 ): Promise<void> {
@@ -133,7 +132,7 @@ async function manuallyUpdateProgress(
 
 export async function* yieldFilesProgress(
 	id: string,
-	files: {[path: string]: string},
+	files: CIDMap,
 	className: string,
 	title: string
 ): AsyncGenerator<TemplateResult> {
@@ -267,8 +266,8 @@ export async function updateStorageEstimate(): Promise<void> {
 }
 
 export function GetAllFactory(
-	filesForApp: {[path: string]: string},
-	filesInIpfs: {[path: string]: string},
+	filesForApp: CIDMap,
+	filesInIpfs: CIDMap,
 	id: string
 ): () => Promise<void> {
 	return async (): Promise<void> => {
@@ -339,7 +338,11 @@ export function GetAllFactory(
 		);
 
 		await Promise.all(Object.keys(notCachedForApp).map(async (path) => {
-			return fetchBlobViaCacheOrIpfs(path).then((result) => {
+			return fetchBlobViaCacheOrIpfs(
+				path,
+				undefined,
+				filesForApp
+			).then((result) => {
 				++numberOfCachedForIpfs;
 				++numberOfCachedForApp;
 
@@ -363,8 +366,8 @@ export function GetAllFactory(
 }
 
 export function RemoveAllFactory(
-	filesForApp: {[path: string]: string},
-	filesInIpfs: {[path: string]: string},
+	filesForApp: CIDMap,
+	filesInIpfs: CIDMap,
 	id: string
 ): () => Promise<void> {
 	return async(): Promise<void> => {
@@ -439,7 +442,7 @@ export function RemoveAllFactory(
 		const deleteFromCacheByPath = async (
 			path: string
 		): Promise<boolean> => {
-			const cid = await pathCID(path);
+			const cid = pathCID(path, filesForApp);
 
 			return cache.delete(new Request('/ipfs/' + cid));
 		};
@@ -492,30 +495,22 @@ export function RemoveAllFactory(
 
 export async function* yieldBulkAlbumAction(
 	id: string,
-	getAlbum: () => Promise<Album>
+	album: Album,
+	filesInIpfs: CIDMap
 ): AsyncGenerator<string|TemplateResult> {
 	yield `Loading ${id}`;
 
-	const album = await getAlbum();
 	const pathsForApp: Array<string> = [];
 	const imageSourcesForAlbum =
 		('art' in album)
 			? (album as AlbumWithArt).art.covers
 			: [];
 
-	const filesInIpfs = Object.fromEntries(
-		Object.entries(await cids()).filter(
-			(entry) => {
-				return entry[0].startsWith(album.path);
-			}
-		)
-	);
-
 	function pushImageSource(source: ImageSource): void {
-		pathsForApp.push(album.path + source.subpath);
+		pathsForApp.push(source.subpath);
 
 		source.srcset.forEach((srcset) => {
-			pathsForApp.push(album.path + srcset.subpath);
+			pathsForApp.push(srcset.subpath);
 		});
 	}
 
@@ -526,7 +521,7 @@ export async function* yieldBulkAlbumAction(
 	Object.values(album.discs).forEach((disc) => {
 		disc.art.forEach(pushImageSource);
 		disc.tracks.forEach((track) => {
-			pathsForApp.push(album.path + track.subpath);
+			pathsForApp.push(track.subpath);
 		});
 	});
 
@@ -560,8 +555,8 @@ export async function* yieldBulkAlbumAction(
 				if ('art' in album) {
 				yield* baseYieldPlaceholderThenPicture(
 					'Loading...',
-						album as AlbumWithArt,
-						(album as AlbumWithArt).art.covers[0]
+						(album as AlbumWithArt).art.covers[0],
+						filesForApp
 				);
 				} else {
 					yield (
@@ -623,7 +618,7 @@ export async function updateBulkAlbumActions(
 						data-name="Loading..."
 					>Loading...</li>`;
 
-					const album = await albumEntry[1]();
+					const { album, cids } = await albumEntry[1]();
 
 					yield html`<li
 						tabindex="0"
@@ -632,7 +627,8 @@ export async function updateBulkAlbumActions(
 						data-name="${album.name}"
 					>${asyncReplace(yieldBulkAlbumAction(
 						albumEntry[0],
-						albumEntry[1]
+						album,
+						cids
 					))}</li>`;
 				})()
 			)}`;

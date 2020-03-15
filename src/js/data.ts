@@ -1,28 +1,20 @@
 import {
 	SupportedExtensionUpperOrLower,
 	SupportedExtensionLower,
-	Album,
 	Track,
 	SrcsetSource,
+	CIDMap,
 } from '../module';
 import {GetIpfsInstance} from './ipfs.js';
 import {mimeType} from './mimeType.js';
 
-export async function cids(): Promise<{[path: string]: string}> {
-	const {
-		cids:_cids
-	} = await import('./data/cids.js');
-
-	return await _cids();
-}
-
 const blobs: {[key: string]: Promise<Blob>} = {};
 const urls: WeakMap<Track|SrcsetSource, Promise<string>> = new WeakMap();
 
-export async function pathCID(path: string): Promise<string>
-{
-	const ocremix = await cids();
-
+export function pathCID(
+	path: string,
+	ocremix: CIDMap
+): string {
 	if ( ! (path in ocremix)) {
 		throw new Error(
 			'album + track combo not found in ocremix payload: ' +
@@ -39,10 +31,11 @@ export async function ocremixCache(): Promise<Cache> {
 
 export async function fetchBlobViaCacheOrIpfs(
 	path: string,
-	skipCache = false
+	skipCache = false,
+	ocremix: CIDMap
 ): Promise<Blob> {
 	const match = /.(mp3|png|jpe?g)$/i.exec(path);
-	const cid = await pathCID(path);
+	const cid = pathCID(path, ocremix);
 	const buffs: Array<Uint8Array> = [];
 
 	if ( ! match) {
@@ -60,10 +53,8 @@ export async function fetchBlobViaCacheOrIpfs(
 	if ('caches' in window && ! skipCache) {
 		const [
 			cache,
-			ocremix,
 		] = await Promise.all([
 			ocremixCache(),
-			cids(),
 		]);
 		const url = '/ipfs/' + ocremix[path];
 		const faux = new Request(url);
@@ -71,7 +62,7 @@ export async function fetchBlobViaCacheOrIpfs(
 
 		const cacheBlob = maybe
 			? await maybe.blob()
-			: await fetchBlobViaCacheOrIpfs(path, true)
+			: await fetchBlobViaCacheOrIpfs(path, true, ocremix)
 
 		if ( ! maybe) {
 			await cache.put(url, new Response(cacheBlob));
@@ -88,20 +79,27 @@ export async function fetchBlobViaCacheOrIpfs(
 }
 
 export async function albumTrackCID(
-	album: Album,
-	track: Track
+	track: Track,
+	ocremix: CIDMap
 ): Promise<string> {
-	return await pathCID(album.path + track.subpath);
+	return pathCID(track.subpath, ocremix);
 }
 
-export async function blob(path: string): Promise<Blob> {
-	const cid = await pathCID(path);
+export async function blob(
+	path: string,
+	ocremix: CIDMap
+): Promise<Blob> {
+	const cid = await pathCID(path, ocremix);
 
 	if ( ! (cid in blobs)) {
 		blobs[cid] = new Promise((yup, nope) => {
 			try {
 				(async (): Promise<Blob> => {
-					return await fetchBlobViaCacheOrIpfs(path);
+					return await fetchBlobViaCacheOrIpfs(
+						path,
+						undefined,
+						ocremix
+					);
 				})().then(yup);
 			} catch (err) {
 				nope(err);
@@ -112,16 +110,20 @@ export async function blob(path: string): Promise<Blob> {
 	return await blobs[cid];
 }
 
-export async function url(path: string): Promise<string> {
-	return URL.createObjectURL(await blob(path));
+export async function url(
+	path: string,
+	cids: CIDMap
+): Promise<string> {
+	return URL.createObjectURL(await blob(path, cids));
 }
 
 export async function urlForThing(
 	thing: Track|SrcsetSource,
-	path: string
+	path: string,
+	cids: CIDMap
 ): Promise<string> {
 	if ( ! urls.has(thing)) {
-		urls.set(thing, url(path));
+		urls.set(thing, url(path, cids));
 	}
 
 	return await (urls.get(thing) as Promise<string>);

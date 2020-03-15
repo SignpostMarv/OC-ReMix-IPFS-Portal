@@ -11,6 +11,7 @@ import {
 	Disc,
 	SrcsetSource,
 	ImageSource,
+	CIDMap,
 } from '../../module';
 import {
 	albumTrackCID,
@@ -18,7 +19,7 @@ import {
 } from '../data.js';
 import {
 	Albums,
-} from 'ocremix-data/src/data/albums.js';
+} from '../data/albums.js';
 import {
 	html,
 	render,
@@ -62,7 +63,10 @@ const preloadAlbumDiscArtPromises: WeakMap<
 > = new WeakMap();
 const completed: WeakSet<Promise<string[]>> = new WeakSet();
 
-async function preloadAlbumDiscArt(album: Album): Promise<string[]> {
+async function preloadAlbumDiscArt(
+	album: Album,
+	cids: CIDMap
+): Promise<string[]> {
 	if ( ! preloadAlbumDiscArtPromises.has(album)) {
 		const promise: Promise<string[]> = new Promise((yup) => {
 			Promise.all(album.discs.reduce(
@@ -82,7 +86,7 @@ async function preloadAlbumDiscArt(album: Album): Promise<string[]> {
 				},
 				[]
 			).map((source: SrcsetSource): Promise<string> => {
-				return urlForThing(source, album.path + source.subpath);
+				return urlForThing(source, source.subpath, cids);
 			})).then((done) => {
 
 				completed.add(promise);
@@ -158,14 +162,14 @@ function oxfordComma(...items: Array<string>): string {
 
 
 async function DiscToMediaMetadataArt(
-	album: Album,
-	disc: Disc
+	disc: Disc,
+	cids: CIDMap
 ): Promise<Array<MediaMetadataArtwork>> {
 	const out: Array<MediaMetadataArtwork> = [];
 
 	return await Promise.all(disc.art.map(
 		async (art): Promise<MediaMetadataArtwork> => {
-			const path = album.path + art.subpath;
+			const path = art.subpath;
 			const match = /.(png|jpe?g)$/i.exec(path);
 
 			if ( ! match) {
@@ -181,7 +185,7 @@ async function DiscToMediaMetadataArt(
 			);
 
 			return {
-				src: await urlForThing(art, path),
+				src: await urlForThing(art, path, cids),
 				sizes: `${art.width}x${art.height}`,
 				type: mimeType(ext),
 			};
@@ -193,12 +197,13 @@ async function DiscToMediaMetadataArt(
 
 async function MaybeDiscToMediaMetadataArt(
 	album: Album,
-	disc: Disc
+	disc: Disc,
+	cids: CIDMap
 ): Promise<Array<MediaMetadataArtwork>> {
-	const maybe = await preloadAlbumDiscArt(album);
+	const maybe = await preloadAlbumDiscArt(album, cids);
 
 	if (maybe.length > 0) {
-		return await DiscToMediaMetadataArt(album, disc);
+		return await DiscToMediaMetadataArt(disc, cids);
 	}
 
 	return [];
@@ -208,10 +213,12 @@ async function queueUpMediaSessionActionHandlers(
 	album: Album,
 	disc: Disc,
 	track: Track,
+	cids: CIDMap,
 	playOtherTrack: ((
 		album: Album,
 		disc: Disc,
 		track: Track,
+		cids: CIDMap,
 		beforeAttempt: undefined|(() => void),
 		beforeFetchUrl: undefined|(() => Promise<void>)
 	) => Promise<void>)
@@ -240,7 +247,8 @@ async function queueUpMediaSessionActionHandlers(
 					? []
 					: await MaybeDiscToMediaMetadataArt(
 						album,
-						disc
+						disc,
+						cids
 					)
 			),
 		});
@@ -274,6 +282,7 @@ async function queueUpMediaSessionActionHandlers(
 						album,
 						disc,
 						tracks[position - 1],
+						cids,
 						undefined,
 						undefined
 					);
@@ -286,6 +295,7 @@ async function queueUpMediaSessionActionHandlers(
 						album,
 						disc,
 						tracks[position + 1],
+						cids,
 						undefined,
 						undefined
 					);
@@ -299,16 +309,17 @@ async function AttemptToPlayTrackFromAlbum(
 	album: Album,
 	disc: Disc,
 	track: Track,
+	cids: CIDMap,
 	beforeAttempt: undefined|(() => void) = undefined,
 	beforeFetchUrl: undefined|(() => Promise<void>) = undefined
 ): Promise<void> {
-	const path = album.path + track.subpath;
+	const path = track.subpath;
 
 	if (beforeAttempt) {
 		beforeAttempt();
 	}
 
-	const cid = await albumTrackCID(album, track);
+	const cid = await albumTrackCID(track, cids);
 
 	if (beforeFetchUrl) {
 		await beforeFetchUrl();
@@ -316,7 +327,7 @@ async function AttemptToPlayTrackFromAlbum(
 
 	trackMostRecentlyAttemptedToPlay = cid;
 
-	const trackUrl = await urlForThing(track, path);
+	const trackUrl = await urlForThing(track, path, cids);
 
 	if (cid === trackMostRecentlyAttemptedToPlay) {
 		currentTrack = track;
@@ -327,6 +338,7 @@ async function AttemptToPlayTrackFromAlbum(
 			album,
 			disc,
 			track,
+			cids,
 			AttemptToPlayTrackFromAlbum
 		);
 	}
@@ -335,7 +347,8 @@ async function AttemptToPlayTrackFromAlbum(
 function AlbumViewClickFactory(
 	album: Album,
 	disc: Disc,
-	track: Track
+	track: Track,
+	cids: CIDMap
 ): (e: Event) => Promise<void> {
 	return async (e: Event): Promise<void> => {
 		const button = e.target as HTMLButtonElement;
@@ -354,6 +367,7 @@ function AlbumViewClickFactory(
 			album,
 			disc,
 			track,
+			cids,
 			(): void => {
 				button.disabled = true;
 				button.textContent = '⏳';
@@ -367,8 +381,8 @@ function AlbumViewClickFactory(
 }
 
 function AlbumViewDownloadFactory(
-	album: Album,
-	track: Track
+	track: Track,
+	cids: CIDMap
 ): (e: Event) => Promise<void> {
 	return async (e: Event): Promise<void> => {
 		const button = e.target as HTMLButtonElement;
@@ -379,7 +393,7 @@ function AlbumViewDownloadFactory(
 		}
 		download.textContent = '⏳';
 		button.disabled = true;
-		download.href = await urlForThing(track, album.path + track.subpath);
+		download.href = await urlForThing(track, track.subpath, cids);
 		download.textContent = '🔽';
 	};
 }
@@ -418,7 +432,7 @@ function creditToTemplateResult(credit: string|Credit): TemplateResult {
 	`;
 }
 
-function AlbumView(album: Album): HTMLElement {
+function AlbumView(album: Album, cids: CIDMap): HTMLElement {
 	if (views.has(album)) {
 		return views.get(album) as HTMLElement;
 	}
@@ -432,7 +446,7 @@ function AlbumView(album: Album): HTMLElement {
 			! ('art' in album)
 				? ''
 				: html`<ol class="covers">${
-					asyncAppend(yieldAlbumCovers(album as AlbumWithArt))
+					asyncAppend(yieldAlbumCovers(album as AlbumWithArt, cids))
 				}</ol>`
 		}
 		<dl class="discs">${album.discs.sort((a, b) => {
@@ -455,7 +469,8 @@ function AlbumView(album: Album): HTMLElement {
 									@click=${AlbumViewClickFactory(
 										album,
 										disc,
-										track
+										track,
+										cids
 									)}
 								>⏯</button>
 								<span>
@@ -485,8 +500,8 @@ function AlbumView(album: Album): HTMLElement {
 									}"
 									title="Prepare Download"
 									@click=${AlbumViewDownloadFactory(
-										album,
-										track
+										track,
+										cids
 									)}
 								>🔽</button>
 								<a
@@ -504,7 +519,10 @@ function AlbumView(album: Album): HTMLElement {
 		${
 			! ('art' in album)
 				? ''
-				: asyncAppend(yieldAlbumBackground(album as AlbumWithArt))
+				: asyncAppend(yieldAlbumBackground(
+					album as AlbumWithArt,
+					cids
+				))
 		}
 	`;
 
@@ -517,9 +535,9 @@ export async function albumView(
 	albumId: string
 ): Promise<[HTMLElement, Album]|undefined> {
 	if (albumId in Albums) {
-		const album = await Albums[albumId]();
+		const { album, cids } = await Albums[albumId]();
 
-		return [AlbumView(album), album];
+		return [AlbumView(album, cids), album];
 	}
 
 	return;
