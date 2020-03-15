@@ -4,19 +4,15 @@ const changed = require('gulp-changed');
 const htmlmin = require('gulp-htmlmin');
 const newer = require('gulp-newer');
 const purgecss = require('gulp-purgecss');
-const typescript = require('gulp-typescript');
-const replace = require('gulp-replace');
 const rename = require('gulp-rename');
 const eslint = require('gulp-eslint');
-const filter = require('gulp-filter');
-const sourcemaps = require('gulp-sourcemaps');
 const uglify = require('gulp-uglify-es').default;
 const inline_source = require('gulp-inline-source');
 const rollup = require('rollup');
 const rollupCommonJs = require('@rollup/plugin-commonjs');
 const rollupNodeResolve = require('@rollup/plugin-node-resolve');
 const rollupJsonResolve = require('@rollup/plugin-json');
-const merge = require('merge-stream');
+const rollupTypescript = require('@rollup/plugin-typescript');
 
 const postcss_plugins = {
 	nested: require('postcss-nested'),
@@ -87,18 +83,9 @@ gulp.task('html', () => {
 	));
 });
 
-const makeTypescript = (
-	glob,
-	newerDest,
-	filterOptions = ['**', '!**/*.d.ts'],
-	projectFile = './tsconfig.json'
-) => {
+gulp.task('eslint', () => {
 	return gulp.src(
-		glob
-	).pipe(
-		filter(filterOptions)
-	).pipe(
-		sourcemaps.init()
+		'./src/**/*.ts'
 	).pipe(
 		eslint({
 			configFile: './.eslint.js',
@@ -107,42 +94,7 @@ const makeTypescript = (
 		eslint.format()
 	).pipe(
 		eslint.failAfterError()
-	).pipe(newer({
-		dest: newerDest,
-		ext: '.js',
-	})).pipe(
-		typescript.createProject(projectFile)()
 	);
-};
-
-gulp.task('ts', () => {
-	const ts = makeTypescript(
-		'./src/js/**/*.ts',
-		'./src/js/',
-		[
-			'**',
-			'!**/*.worker.ts',
-			'!**/*.d.ts',
-		]
-	);
-
-	const workers = makeTypescript(
-		'./src/js/**/*.worker.ts',
-		'./src/js/',
-		[],
-		'./tsconfig.workers.json'
-	);
-
-	return merge(...[
-		ts.js.pipe(uglify()),
-		workers.pipe(uglify()),
-		ts.dts,
-		workers.dts,
-	]).pipe(
-		sourcemaps.write('./')
-	).pipe(gulp.dest(
-		'./src/js/'
-	));
 });
 
 gulp.task('sync', () => {
@@ -197,10 +149,14 @@ gulp.task('uglify', () => {
 
 gulp.task('rollup', async () => {
 	const bundle = await rollup.rollup({
-		input: './src/js/load.js',
+		input: './src/js/load.ts',
 		plugins: [
 			rollupNodeResolve(),
 			rollupJsonResolve(),
+			rollupTypescript({
+				tsconfig: './tsconfig.json',
+				outDir: './tmp/js',
+			}),
 		],
 	});
 
@@ -227,11 +183,11 @@ gulp.task('sync--ipfs--build-module', async () => {
 });
 
 gulp.task('default', gulp.series(...[
+	'eslint',
 	gulp.parallel(...[
 		'html',
 		'css--first-load',
 		'css--style',
-		'ts',
 		'sync--ipfs--build-module',
 	]),
 	'rollup',

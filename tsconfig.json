@@ -2,8 +2,8 @@
 	"compilerOptions": {
 		"allowJs": false,
 		"allowSyntheticDefaultImports": false,
-		"declaration": true,
-		"declarationMap": true,
+		"declaration": false,
+		"declarationMap": false,
 		"forceConsistentCasingInFileNames": true,
 		"experimentalDecorators": true,
 		"lib": [
@@ -26,8 +26,6 @@
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
 		"strict": true,
-		"declarationDir": "./",
-		"baseUrl": "./",
 		"rootDir": "./",
 		"resolveJsonModule": true,
 		"target": "ESNext"
