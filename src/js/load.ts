@@ -1,5 +1,12 @@
 import { handleView } from './views.js';
 
+export {
+	AlbumLink,
+} from './elements/album-link.js';
+export {
+	ImageSourceElement,
+} from './elements/image-source.js';
+
 (async (): Promise<void> => {
 	[...document.head.querySelectorAll(
 		'link[rel="preload"][as="style"][href*="/css/"][href$=".css"]'

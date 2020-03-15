@@ -19,9 +19,6 @@ import {
 	asyncReplace,
 } from 'lit-html/directives/async-replace.js';
 import {
-	yieldPlaceholderThenPicture as baseYieldPlaceholderThenPicture,
-} from '../../utilities/elements.js';
-import {
 	AlbumWithArt,
 	ImageSource
 } from '../../../module';
@@ -551,13 +548,12 @@ export async function* yieldBulkAlbumAction(
 			)
 		)}
 		${asyncReplace((
-			async function* (): AsyncGenerator<string|HTMLPictureElement> {
+			async function* (): AsyncGenerator<string|TemplateResult> {
 				if ('art' in album) {
-				yield* baseYieldPlaceholderThenPicture(
-					'Loading...',
-						(album as AlbumWithArt).art.covers[0],
-						filesForApp
-				);
+					yield html`<ocremix-image
+						.cidMap=${filesForApp}
+						.source=${(album as AlbumWithArt).art.covers[0]}
+						></ocremix-image>`;
 				} else {
 					yield (
 						album as Album

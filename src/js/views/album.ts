@@ -22,15 +22,11 @@ import {
 } from '../data/albums.js';
 import {
 	html,
-	render,
 	TemplateResult,
+} from 'lit-element';
+import {
+	render,
 } from 'lit-html';
-import {
-	asyncAppend
-} from 'lit-html/directives/async-append.js';
-import {
-	yieldAlbumBackground, yieldAlbumCovers
-} from '../utilities/elements.js';
 import {
 	mimeType,
 } from '../mimeType.js';
@@ -446,7 +442,12 @@ function AlbumView(album: Album, cids: CIDMap): HTMLElement {
 			! ('art' in album)
 				? ''
 				: html`<ol class="covers">${
-					asyncAppend(yieldAlbumCovers(album as AlbumWithArt, cids))
+					(album as AlbumWithArt).art.covers.map((cover) => {
+						return html`<li><ocremix-image
+							.cidMap=${cids}
+							.source=${cover}
+						></ocremix-image></li>`
+					})
 				}</ol>`
 		}
 		<dl class="discs">${album.discs.sort((a, b) => {
@@ -519,10 +520,12 @@ function AlbumView(album: Album, cids: CIDMap): HTMLElement {
 		${
 			! ('art' in album)
 				? ''
-				: asyncAppend(yieldAlbumBackground(
-					album as AlbumWithArt,
-					cids
-				))
+				: html`<ocremix-image
+					class="bg"
+					placeholder="Loading..."
+					.cidMap=${cids}
+					.source=${(album as AlbumWithArt).art.background}
+					></ocremix-image>`
 		}
 	`;
 

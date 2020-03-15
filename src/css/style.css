@@ -305,7 +305,8 @@ table
 		justify-content: left ;
 	}
 
-	.entry
+	ocremix-album-link > a,
+	li.entry
 	{
 		position: relative ;
 		transform: scale(.9) ;
@@ -576,7 +577,7 @@ table
 		}
 	}
 
-	.bg
+	picture.bg
 	{
 		position: fixed ;
 		top: 0 ;
