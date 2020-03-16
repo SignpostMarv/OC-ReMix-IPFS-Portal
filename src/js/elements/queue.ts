@@ -29,7 +29,7 @@ export class TrackQueueGroup extends LitElement
 	@property()
 	target: PlayTarget = DummyTarget;
 
-	createRenderRoot()
+	createRenderRoot(): TrackQueueGroup
 	{
 		return this;
 	}
@@ -63,7 +63,7 @@ export class Queue extends LitElement
 	@property()
 	target: PlayTarget = DummyTarget;
 
-	createRenderRoot()
+	createRenderRoot(): Queue
 	{
 		return this;
 	}

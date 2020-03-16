@@ -28,7 +28,7 @@ export class DownloadButton extends LitElement
 	@property()
 	disabled = false;
 
-	createRenderRoot()
+	createRenderRoot(): DownloadButton
 	{
 		return this;
 	}
@@ -52,7 +52,7 @@ export class DownloadButton extends LitElement
 		`;
 	}
 
-	async handleClick(e: Event)
+	async handleClick(e: Event): Promise<void>
 	{
 		const button = e.target as HTMLButtonElement;
 		const download = button.nextElementSibling;

@@ -6,6 +6,7 @@ export * from './elements/play-button.js';
 export * from './elements/download-button.js';
 export * from './elements/track.js';
 export * from './elements/queue.js';
+export * from './elements/favourite-button.js';
 
 (async (): Promise<void> => {
 	[...document.head.querySelectorAll(

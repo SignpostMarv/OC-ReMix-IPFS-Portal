@@ -45,7 +45,7 @@ export class PlayButton extends LitElement
 	@property()
 	disabled = false;
 
-	createRenderRoot()
+	createRenderRoot(): PlayButton
 	{
 		return this;
 	}

@@ -20,6 +20,9 @@ import {
 	DummyTarget,
 	PlayTarget,
 } from '../utilities/play-target.js';
+import {
+	SerialiseTrack
+} from '../utilities/serialise.js';
 
 function noFixAvailable(): TemplateResult {
 	return html`
@@ -101,7 +104,7 @@ export class TrackElement extends LitElement
 	@property()
 	target: PlayTarget = DummyTarget;
 
-	createRenderRoot()
+	createRenderRoot(): TrackElement
 	{
 		return this;
 	}
@@ -139,6 +142,9 @@ export class TrackElement extends LitElement
 					? noFixAvailable()
 					: ''
 			}
+			<ocremix-favourite-button
+				.favourite=${SerialiseTrack(this.album, this.track)}
+			></ocremix-favourite-button>
 			<ocremix-download-button
 				.track=${this.track}
 				.cidMap=${this.cidMap}
