@@ -12,11 +12,13 @@ import {
 	Credit,
 	ImageSource,
 	Album,
+	NamedCredit,
 } from '../../module';
 import {
 	DummyTarget,
 	PlayTarget,
 } from '../utilities/play-target.js';
+import { CreditWithId, CreditWithUrl } from 'ocremix-data/src/module';
 
 function noFixAvailable(): TemplateResult {
 	return html`
@@ -30,16 +32,9 @@ function noFixAvailable(): TemplateResult {
 	`
 }
 
-function creditToTemplateResult(credit: string|Credit): TemplateResult {
-	return html`
-		<li>${
-			('string' === typeof credit)
-				? credit
-				: html`<a
-					rel="nofollow noopener"
-					href="${credit.url}"
-					target="_blank"
-				>${
+function namedCredit(credit: NamedCredit): TemplateResult
+{
+	return html`${
 					('string' === typeof credit.name)
 						? html`${credit.name}`
 						: Object.entries(credit.name).map((entry) => {
@@ -47,7 +42,31 @@ function creditToTemplateResult(credit: string|Credit): TemplateResult {
 
 							return html`<span lang="${lang}">${name}</span>`;
 						})
-				}</a>`
+	}`;
+}
+
+function urlCredit(credit: CreditWithId|CreditWithUrl): TemplateResult
+{
+	return html`<a
+		rel="nofollow noopener"
+		href="${
+			('url' in credit)
+				? credit.url
+				: `https://ocremix.org/artist/${credit}`
+		}"
+	>${namedCredit(credit)}</a>`;
+}
+
+function creditToTemplateResult(credit: Credit): TemplateResult {
+	return html`
+		<li>${
+			('string' === typeof credit)
+				? credit
+				: (
+					! ('url' in credit)
+						? namedCredit(credit)
+						: urlCredit(credit)
+				)
 		}</li>
 	`;
 }

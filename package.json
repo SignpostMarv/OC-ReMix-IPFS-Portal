@@ -26,7 +26,7 @@
 		"ipfs": "^0.41.2",
 		"lit-element": "^2.2.1",
 		"lit-html": "^1.1.2",
-		"ocremix-data": "^0.1.1",
+		"ocremix-data": "^0.2.0",
 		"ocremix-ipfs-data": "^0.6.0",
 		"postcss-calc": "^7.0.2",
 		"postcss-font-family-system-ui": "^4.2.0",
