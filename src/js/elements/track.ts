@@ -13,12 +13,13 @@ import {
 	ImageSource,
 	Album,
 	NamedCredit,
+	CreditWithId,
+	CreditWithUrl,
 } from '../../module';
 import {
 	DummyTarget,
 	PlayTarget,
 } from '../utilities/play-target.js';
-import { CreditWithId, CreditWithUrl } from 'ocremix-data/src/module';
 
 function noFixAvailable(): TemplateResult {
 	return html`
