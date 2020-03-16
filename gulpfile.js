@@ -9,10 +9,14 @@ const eslint = require('gulp-eslint');
 const uglify = require('gulp-uglify-es').default;
 const inline_source = require('gulp-inline-source');
 const rollup = require('rollup');
-const rollupCommonJs = require('@rollup/plugin-commonjs');
-const rollupNodeResolve = require('@rollup/plugin-node-resolve');
-const rollupJsonResolve = require('@rollup/plugin-json');
-const rollupTypescript = require('@rollup/plugin-typescript');
+
+const rollupPlugins = {
+	commonjs: require('@rollup/plugin-commonjs'),
+	nodeResolve: require('@rollup/plugin-node-resolve'),
+	jsonResolve: require('@rollup/plugin-json'),
+	typescript: require('@rollup/plugin-typescript'),
+	minifyHtml: require('rollup-plugin-minify-html-literals').default,
+};
 
 const postcss_plugins = {
 	nested: require('postcss-nested'),
@@ -151,17 +155,18 @@ gulp.task('rollup', async () => {
 	const bundle = await rollup.rollup({
 		input: './src/js/load.ts',
 		plugins: [
-			rollupNodeResolve(),
-			rollupJsonResolve(),
-			rollupTypescript({
+			rollupPlugins.nodeResolve(),
+			rollupPlugins.jsonResolve(),
+			rollupPlugins.typescript({
 				tsconfig: './tsconfig.json',
 				outDir: './tmp/js',
 			}),
+			rollupPlugins.minifyHtml(),
 		],
 	});
 
 	return await bundle.write({
-		sourcemap: true,
+		sourcemap: false,
 		format: 'es',
 		dir: './tmp/js/',
 	});
@@ -171,7 +176,7 @@ gulp.task('sync--ipfs--build-module', async () => {
 	const bundle = await rollup.rollup({
 		input: './node_modules/ipfs/dist/index.js',
 		plugins: [
-			rollupCommonJs(),
+			rollupPlugins.commonjs(),
 		],
 	});
 
