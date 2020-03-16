@@ -4,6 +4,14 @@
 1) `npm install`
 2) `gulp`
 
+## Serve
+emojis are used for icons, so serving as utf-8 is required.
+
+### Apache
+```
+AddDefaultCharset utf-8
+```
+
 ## Browse
 Use any http server of your choice, serve the `./dist/` folder then open in a recent/modern browser.
 
