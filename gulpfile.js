@@ -180,10 +180,16 @@ gulp.task('sync--ipfs--build-module', async () => {
 		],
 	});
 
-	return await bundle.write({
+	await bundle.write({
 		sourcemap: true,
 		format: 'es',
 		dir: './src/ipfs/',
+	});
+
+	return await bundle.write({
+		sourcemap: false,
+		format: 'es',
+		dir: './dist/ipfs/',
 	});
 });
 
