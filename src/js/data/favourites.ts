@@ -34,6 +34,11 @@ export function IsFavourite(favourite: Favourite): boolean
 	});
 }
 
+export function SaveFavourites(): void
+{
+	localStorage.setItem('favourites', JSON.stringify(favourites));
+}
+
 export function AddFavourite(favourite: Favourite): void
 {
 	const alreadyThere = IsFavourite(favourite);
@@ -42,7 +47,7 @@ export function AddFavourite(favourite: Favourite): void
 		favourites.push(favourite);
 	}
 
-	localStorage.setItem('favourites', JSON.stringify(favourites));
+	SaveFavourites();
 }
 
 export function RemoveFavourite(favourite: Favourite): void
@@ -54,6 +59,8 @@ export function RemoveFavourite(favourite: Favourite): void
 			maybe[2] === favourite[2]
 		);
 	});
+
+	SaveFavourites();
 }
 
 export function GetFavourites(): Favourite[]
