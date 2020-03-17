@@ -26,6 +26,15 @@ views.push(async (hash: string): Promise<HTMLElement|undefined> => {
 	return await updateAppInfo();
 });
 views.push(async (hash: string): Promise<HTMLElement|undefined> => {
+	if ( ! /^#favourites$/.test(hash)) {
+		return;
+	}
+
+	const { favouritesView } = await import('./views/favourites.js');
+
+	return await favouritesView();
+});
+views.push(async (hash: string): Promise<HTMLElement|undefined> => {
 	const maybe = albumHashRegex.exec(hash);
 	if ( ! maybe) {
 		return;

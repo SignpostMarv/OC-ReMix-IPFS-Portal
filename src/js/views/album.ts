@@ -13,22 +13,10 @@ import {
 	render,
 } from 'lit-html';
 import {
-	PlayTarget
-} from '../utilities/play-target';
+	target as playTarget,
+} from './audio';
 
 const views: WeakMap<Album, HTMLElement> = new WeakMap();
-const audio = ((): HTMLAudioElement => {
-	const audio = document.createElement('audio');
-
-	audio.controls = true;
-	audio.src=  '';
-
-	return audio;
-})();
-
-const playTarget = new PlayTarget(audio, false);
-
-document.body.appendChild(audio);
 
 function AlbumView(album: Album, cids: CIDMap): HTMLElement {
 	if (views.has(album)) {

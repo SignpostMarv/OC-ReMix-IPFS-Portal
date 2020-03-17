@@ -55,3 +55,8 @@ export function RemoveFavourite(favourite: Favourite): void
 		);
 	});
 }
+
+export function GetFavourites(): Favourite[]
+{
+	return favourites;
+}
