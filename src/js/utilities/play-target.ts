@@ -12,7 +12,10 @@ import {
 } from '../../module';
 import { urlForThing, albumTrackCID } from '../data';
 import { mimeType } from '../mimeType';
-import { ImageSourceElement } from '../elements/image-source';
+import {
+	ImageSourceElement,
+	ImageSourceList,
+} from '../elements/image-source';
 
 const preloadArtPromises: WeakMap<Track, Promise<string[]>> = new WeakMap();
 const completed = new WeakSet();
@@ -125,7 +128,7 @@ function oxfordComma(...items: Array<string>): string {
 
 async function queueUpMediaSessionActionHandlers(
 	target: PlayTarget,
-	tracks: [Album, Track, ImageSource[], CIDMap, ImageSource|undefined][],
+	tracks: PlayTargetTrack[],
 	album: Album,
 	track: Track,
 	art: ImageSource[],
@@ -224,18 +227,29 @@ async function queueUpMediaSessionActionHandlers(
 	}
 }
 
+export type PlayTargetTrack = [
+	Album,
+	Track,
+	ImageSource[],
+	CIDMap,
+	ImageSource|undefined,
+	ImageSource[],
+];
+
 export class PlayTarget
 {
 	target: HTMLAudioElement;
 	background: ImageSourceElement;
-	currentTrack: [Album, Track, ImageSource[], CIDMap, ImageSource|undefined]|undefined;
-	otherTracks: [Album, Track, ImageSource[], CIDMap, ImageSource|undefined][] = [];
+	covers: ImageSourceList;
+	currentTrack: PlayTargetTrack|undefined;
+	otherTracks: PlayTargetTrack[] = [];
 	isPlaying: boolean;
 	cidMostRecentlyAttemptedToPlay = '';
 
 	constructor(
 		target: HTMLAudioElement,
 		background: ImageSourceElement,
+		covers: ImageSourceList,
 		isPlaying: boolean
 	) {
 		target.addEventListener('ended', () => {
@@ -271,11 +285,12 @@ export class PlayTarget
 
 		this.target = target;
 		this.background = background;
+		this.covers = covers;
 		this.isPlaying = isPlaying;
 	}
 
 	async play(
-		freshTrack: [Album, Track, ImageSource[], CIDMap, ImageSource|undefined],
+		freshTrack: PlayTargetTrack,
 		onpause: undefined|(() => void) = undefined,
 		onpending: undefined|(() => void) = undefined,
 		ondone: undefined|(() => void) = undefined
@@ -294,19 +309,11 @@ export class PlayTarget
 
 			this.currentTrack = undefined;
 
-			console.log('already playing?');
-
 			return;
 		}
 
-		if (
-			this.background.cidMap !== freshTrack[3] ||
-			this.background.source !== freshTrack[4]
-		) {
-			this.background.hidden = true;
-		}
-
-		console.log('trying to play', freshTrack);
+		this.background.hidden = true;
+		this.covers.hidden = true;
 
 		if (onpending) {
 			onpending();
@@ -335,13 +342,18 @@ export class PlayTarget
 
 			await this.target.play();
 
-			console.log(freshTrack);
-
 			if (freshTrack[4]) {
+				console.log('setting background');
+
 				this.background.cidMap = freshTrack[3];
 				this.background.source = freshTrack[4];
 				this.background.hidden = false;
 			}
+
+			console.log('setting covers');
+
+			this.covers.sources = [freshTrack[3], freshTrack[5]];
+			this.covers.hidden = false;
 		}
 
 		if (ondone) {
@@ -349,9 +361,3 @@ export class PlayTarget
 		}
 	}
 }
-
-export const DummyTarget = new PlayTarget(
-	new Audio(),
-	new ImageSourceElement(),
-	false
-);

@@ -6,16 +6,11 @@ import {
 	TemplateResult,
 } from 'lit-element';
 import {
-	CIDMap,
-	Track,
-	Album,
-	ImageSource,
-} from '../../module';
-import {
 	PlayTarget,
-	DummyTarget,
+	PlayTargetTrack,
 } from '../utilities/play-target.js';
 import { TrackElement } from './track';
+import { target } from '../utilities/default-target.js';
 
 @customElement('ocremix-track-queue-group')
 export class TrackQueueGroup extends LitElement
@@ -24,16 +19,10 @@ export class TrackQueueGroup extends LitElement
 	name = '';
 
 	@property()
-	tracks: [
-		Track,
-		Album,
-		CIDMap,
-		ImageSource[],
-		ImageSource|undefined,
-	][] = [];
+	tracks: PlayTargetTrack[] = [];
 
 	@property()
-	target: PlayTarget = DummyTarget;
+	target: PlayTarget = target;
 
 	createRenderRoot(): TrackQueueGroup
 	{
@@ -45,20 +34,7 @@ export class TrackQueueGroup extends LitElement
 		return html`
 			<header>${this.name}</header>
 			<section class="tracks">${this.tracks.map((item): TemplateResult => {
-				const [track, album, cids, art, background] = item;
-				return html`
-					<ocremix-track
-							.track=${track}
-							.album=${album}
-							.art=${art}
-							.cidMap=${cids}
-							.target=${this.target}
-							.background=${background}
-							play-label="Play or Pause ${
-								track.name
-							}"
-						></ocremix-track>
-					`;
+				return html`${TrackElement.FromPlayTargetTrack(item)}`;
 			})}</section>
 		`;
 	}
@@ -68,7 +44,7 @@ export class TrackQueueGroup extends LitElement
 export class Queue extends LitElement
 {
 	@property()
-	target: PlayTarget = DummyTarget;
+	target: PlayTarget = target;
 
 	createRenderRoot(): Queue
 	{
@@ -109,17 +85,20 @@ export class Queue extends LitElement
 			return;
 		}
 
+		console.log('is dummy', this.target === target);
+
 		this.target.otherTracks = ([
 			...this.querySelectorAll('ocremix-track')
 		].filter((track) => {
 			return track instanceof TrackElement;
-		}) as TrackElement[]).map((track) => {
+		}) as TrackElement[]).map((track): PlayTargetTrack => {
 			return [
 				track.album,
 				track.track,
 				track.art,
 				track.cidMap,
 				track.background,
+				track.covers,
 			];
 		});
 	}

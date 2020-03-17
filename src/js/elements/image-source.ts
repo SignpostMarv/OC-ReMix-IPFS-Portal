@@ -71,9 +71,6 @@ export class ImageSourceElement extends LitElement
 	@property()
 	placeholder = '';
 
-	@property()
-	hidden = false;
-
 	createRenderRoot(): ImageSourceElement
 	{
 		return this;
@@ -81,7 +78,7 @@ export class ImageSourceElement extends LitElement
 
 	render(): TemplateResult
 	{
-		if (this.hidden || '' === this.source.subpath) {
+		if ('' === this.source.subpath) {
 			return html`${''}`;
 		}
 
@@ -91,5 +88,39 @@ export class ImageSourceElement extends LitElement
 			this.placeholder,
 			this.class
 		))}`;
+	}
+}
+
+@customElement('ocremix-image-list')
+export class ImageSourceList extends LitElement
+{
+	@property()
+	sources: [CIDMap, ImageSource[]] = [{}, []];
+
+	@property()
+	placeholder = 'Loading...';
+
+	@property({attribute: 'image-class'})
+	class = '';
+
+	createRenderRoot(): ImageSourceList
+	{
+		return this;
+	}
+
+	render(): TemplateResult
+	{
+		return html`<ol>${this.sources[1].map(source => {
+			return html`
+				<li>
+					<ocremix-image
+						.cidMap=${this.sources[0]}
+						.source=${source}
+						class=${this.class}
+						placeholder=${this.placeholder}
+					></ocremix-image>
+				</li>
+			`;
+		})}</ol>`;
 	}
 }

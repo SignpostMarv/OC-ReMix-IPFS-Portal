@@ -1,4 +1,5 @@
 import { handleView } from './views.js';
+import { target } from './utilities/default-target.js';
 
 export * from './elements/album-link.js';
 export * from './elements/image-source.js';
@@ -41,7 +42,7 @@ export * from './elements/favourite-button.js';
 
 	async function handleHash(hash: string): Promise<void> {
 		swapMain(
-			await handleView(hash),
+			await handleView(hash, target),
 			('#' !== hash && '' !== hash)
 		);
 	}

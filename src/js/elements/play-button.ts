@@ -6,44 +6,34 @@ import {
 	TemplateResult,
 } from 'lit-element';
 import {
-	CIDMap,
-	Track,
-	ImageSource,
-	Album,
-} from '../../module';
-import {
 	PlayTarget,
-	DummyTarget,
+	PlayTargetTrack,
 } from '../utilities/play-target.js';
+import { target } from '../utilities/default-target.js';
 
 @customElement('ocremix-play-button')
 export class PlayButton extends LitElement
 {
 	@property()
-	track: Track = {name: '', subpath: '', index: -1, credits: []};
-
-	@property()
-	album: Album = {name: '', id: '', path: '', discs: [], credits: {
-		directors: [],
-		composers: [],
-		arrangers: [],
-		artwork: [],
-	}};
-
-	@property()
-	cidMap: CIDMap = {};
-
-	@property()
-	art: ImageSource[] = [];
-
-	@property()
-	background: ImageSource|undefined;
+	playTargetTrack: PlayTargetTrack = [
+		{name: '', id: '', path: '', discs: [], credits: {
+			directors: [],
+			composers: [],
+			arrangers: [],
+			artwork: [],
+		}},
+		{name: '', subpath: '', index: -1, credits: []},
+		[],
+		{},
+		undefined,
+		[],
+	];
 
 	@property()
 	label = '';
 
 	@property()
-	target: PlayTarget = DummyTarget;
+	target: PlayTarget = target;
 
 	@property()
 	disabled = false;
@@ -68,7 +58,7 @@ export class PlayButton extends LitElement
 	async handleClick(): Promise<void>
 	{
 		this.target.play(
-			[this.album, this.track, this.art, this.cidMap, this.background],
+			this.playTargetTrack,
 			() => { this.disabled = false; },
 			() => { this.disabled = true; },
 			() => { this.disabled = false; }

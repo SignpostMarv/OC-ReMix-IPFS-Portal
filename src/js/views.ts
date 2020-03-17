@@ -1,13 +1,14 @@
 import {
 	updateTitleSuffix,
 } from './utilities/elements.js';
-import {
-	target,
-} from './views/audio';
+import { PlayTarget } from './utilities/play-target.js';
 
 const albumHashRegex = /^#album\/(OCRA\d{4})$/;
 
-const views: Array<(hash: string) => Promise<HTMLElement|undefined>> = [];
+const views: Array<(
+	hash: string,
+	target: PlayTarget
+) => Promise<HTMLElement|undefined>> = [];
 
 views.push(async (hash: string): Promise<HTMLElement|undefined> => {
 	if ( ! /^#?$/.test(hash)) {
@@ -28,16 +29,22 @@ views.push(async (hash: string): Promise<HTMLElement|undefined> => {
 
 	return await updateAppInfo();
 });
-views.push(async (hash: string): Promise<HTMLElement|undefined> => {
+views.push(async (
+	hash: string,
+	target: PlayTarget
+): Promise<HTMLElement|undefined> => {
 	if ( ! /^#favourites$/.test(hash)) {
 		return;
 	}
 
 	const { favouritesView } = await import('./views/favourites.js');
 
-	return await favouritesView();
+	return await favouritesView(target);
 });
-views.push(async (hash: string): Promise<HTMLElement|undefined> => {
+views.push(async (
+	hash: string,
+	target: PlayTarget
+): Promise<HTMLElement|undefined> => {
 	const maybe = albumHashRegex.exec(hash);
 	if ( ! maybe) {
 		return;
@@ -45,7 +52,7 @@ views.push(async (hash: string): Promise<HTMLElement|undefined> => {
 
 	const { albumView } = await import('./views/album.js');
 
-	const result = await albumView(maybe[1]);
+	const result = await albumView(maybe[1], target);
 
 	if ( ! result) {
 		return;
@@ -78,11 +85,15 @@ views.push(async (): Promise<HTMLElement> => {
 	return await notFound();
 });
 
-export async function handleView(hash: string): Promise<HTMLElement> {
+export async function handleView(
+	hash: string,
+	target: PlayTarget
+): Promise<HTMLElement> {
 	target.background.hidden = true;
+	target.covers.hidden = true;
 
 	for await (const maybe of views) {
-		const result = await maybe(hash);
+		const result = await maybe(hash, target);
 
 		if (result) {
 			return result;

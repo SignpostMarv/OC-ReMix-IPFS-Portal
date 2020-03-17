@@ -419,40 +419,16 @@ ocremix-download-button
 	}
 }
 
-.view
+ocremix-image-list
 {
-	display: flex ;
-	padding-bottom: 6rem ;
-	flex-direction: column ;
-
-	@media (min-width: 768px)
-	{
-		flex-direction: row ;
-	}
-
-	> .covers,
-	> ocremix-track-queue
-	{
-		flex: 1 1 ;
-		position: relative ;
-	}
-
-	ol
-	{
-		list-style: inside none ;
-
-		> :not(:first-child)
-		{
-			margin-top: 1rem ;
-		}
-	}
-
-	.covers
+	> ol
 	{
 		display: flex;
 		flex-direction: row;
 		overflow: auto;
 		scroll-snap-type: x mandatory;
+		position: relative ;
+		z-index: 2 ;
 
 		@media (min-width: 768px)
 		{
@@ -487,6 +463,36 @@ ocremix-download-button
 				width: 100% ;
 				height: auto ;
 			}
+		}
+	}
+}
+
+.view
+{
+	display: flex ;
+	padding-bottom: 6rem ;
+	flex-direction: column ;
+
+	@media (min-width: 768px)
+	{
+		flex-direction: row ;
+	}
+
+	> ocremix-image-list,
+	> ocremix-track-queue
+	{
+		flex: 1 1 ;
+		position: relative ;
+		z-index: 2 ;
+	}
+
+	ol
+	{
+		list-style: inside none ;
+
+		> :not(:first-child)
+		{
+			margin-top: 1rem ;
 		}
 	}
 

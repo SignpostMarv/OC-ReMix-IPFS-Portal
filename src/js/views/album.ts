@@ -2,8 +2,6 @@ import {
 	Album,
 	AlbumWithArt,
 	CIDMap,
-	Track,
-	ImageSource,
 } from '../../module';
 import {
 	Albums,
@@ -13,12 +11,16 @@ import {
 	render,
 } from 'lit-html';
 import {
-	target as playTarget, target,
-} from './audio';
+	PlayTargetTrack, PlayTarget,
+} from '../utilities/play-target';
 
 const views: WeakMap<Album, HTMLElement> = new WeakMap();
 
-function AlbumView(album: Album, cids: CIDMap): HTMLElement {
+function AlbumView(
+	album: Album,
+	cids: CIDMap,
+	target: PlayTarget
+): HTMLElement {
 	if (views.has(album)) {
 		return views.get(album) as HTMLElement;
 	}
@@ -34,46 +36,44 @@ function AlbumView(album: Album, cids: CIDMap): HTMLElement {
 		target.background.cidMap = cids;
 		target.background.source = (album as AlbumWithArt).art.background;
 		target.background.hidden = false;
+		target.covers.sources = [cids, (album as AlbumWithArt).art.covers];
+		target.covers.hidden = false;
 	}
 
 	const template = html`
-		${
-			! ('art' in album)
-				? ''
-				: html`<ol class="covers">${
-					(album as AlbumWithArt).art.covers.map((cover) => {
-						return html`<li><ocremix-image
-							.cidMap=${cids}
-							.source=${cover}
-						></ocremix-image></li>`
-					})
-				}</ol>`
-		}
 		<ocremix-track-queue
-			.target=${playTarget}
+			.target=${target}
 		>${album.discs.sort((a, b) => {
 			return a.index - b.index;
 		}).map((disc) => {
-			const background =
+			const background = (
 				disc.background ||
 				(
 					('art' in album)
 						? (album as AlbumWithArt).art.background
 						: undefined
-				);
+				)
+			);
+
+			const covers = (
+				('art' in album)
+					? (album as AlbumWithArt).art.covers
+					: []
+			);
 
 			return html`
 				<ocremix-track-queue-group
 					name="${disc.name}"
 					.tracks=${disc.tracks.map(
-						(track): [
-							Track,
-							Album,
-							CIDMap,
-							ImageSource[],
-							ImageSource|undefined,
-						] => {
-							return [track, album, cids, disc.art, background];
+						(track): PlayTargetTrack => {
+							return [
+								album,
+								track,
+								disc.art,
+								cids,
+								background,
+								covers
+							];
 						}
 					)}
 				></ocremix-track-queue-group>
@@ -87,12 +87,13 @@ function AlbumView(album: Album, cids: CIDMap): HTMLElement {
 }
 
 export async function albumView(
-	albumId: string
+	albumId: string,
+	target: PlayTarget
 ): Promise<[HTMLElement, Album]|undefined> {
 	if (albumId in Albums) {
 		const { album, cids } = await Albums[albumId]();
 
-		return [AlbumView(album, cids), album];
+		return [AlbumView(album, cids, target), album];
 	}
 
 	return;

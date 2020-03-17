@@ -17,12 +17,13 @@ import {
 	CreditWithUrl,
 } from '../../module';
 import {
-	DummyTarget,
 	PlayTarget,
+	PlayTargetTrack,
 } from '../utilities/play-target.js';
 import {
 	SerialiseTrack
 } from '../utilities/serialise.js';
+import { target } from '../utilities/default-target';
 
 function noFixAvailable(): TemplateResult {
 	return html`
@@ -99,6 +100,9 @@ export class TrackElement extends LitElement
 	@property()
 	background: ImageSource|undefined;
 
+	@property()
+	covers: ImageSource[] = [];
+
 	@property({attribute: 'play-label'})
 	playLabel = '';
 
@@ -106,7 +110,7 @@ export class TrackElement extends LitElement
 	downloadLabel = '';
 
 	@property()
-	target: PlayTarget = DummyTarget;
+	target: PlayTarget = target;
 
 	createRenderRoot(): TrackElement
 	{
@@ -117,13 +121,16 @@ export class TrackElement extends LitElement
 	{
 		return html`
 			<ocremix-play-button
-				.track=${this.track}
-				.album=${this.album}
-				.art=${this.art}
-				.cidMap=${this.cidMap}
-				label="${this.playLabel}"
+				.playTargetTrack=${[
+					this.album,
+					this.track,
+					this.art,
+					this.cidMap,
+					this.background,
+					this.covers,
+				] as PlayTargetTrack}
 				.target=${this.target}
-				.background=${this.background}
+				label="${this.playLabel}"
 			></ocremix-play-button>
 			<span>
 			${this.track.name}
@@ -157,5 +164,23 @@ export class TrackElement extends LitElement
 				label="${this.downloadLabel}"
 			></ocremix-download-button>
 		`;
+	}
+
+	static FromPlayTargetTrack(track: PlayTargetTrack): TrackElement
+	{
+		const out = new TrackElement();
+
+		[
+			out.album,
+			out.track,
+			out.art,
+			out.cidMap,
+			out.background,
+			out.covers,
+		] = track;
+
+		out.playLabel = `Play or Pause ${track[1].name}`;
+
+		return out;
 	}
 }

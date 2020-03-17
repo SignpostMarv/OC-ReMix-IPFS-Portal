@@ -18,15 +18,15 @@ import {
 	html,
 	TemplateResult,
 } from 'lit-html';
-import {
-	target,
-} from './audio';
+import { PlayTarget } from '../utilities/play-target';
 
 const main = document.createElement('main');
 
 main.classList.add('view');
 
-export async function favouritesView(): Promise<HTMLElement> {
+export async function favouritesView(
+	target: PlayTarget
+): Promise<HTMLElement> {
 	updateTitleSuffix('Favourites');
 
 	const favourites = GetFavourites();
@@ -115,11 +115,16 @@ export async function favouritesView(): Promise<HTMLElement> {
 					name="${name}"
 					.tracks=${albums[albumId][discRef].map(trackRef => {
 						return [
-							trackRef[0],
 							album,
-							trackRef[1],
+							trackRef[0],
 							disc.art,
+							trackRef[1],
 							background,
+							(
+								('art' in album)
+									? (album as AlbumWithArt).art.covers
+									: []
+							),
 						];
 					})}
 				></ocremix-track-queue-group>
