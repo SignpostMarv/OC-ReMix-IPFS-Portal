@@ -10,6 +10,11 @@ export type AlbumResult = {
 export const Albums: {
 	[id: string]: () => Promise<AlbumResult>;
 } = {
+	OCRA0003: async (): Promise<AlbumResult> => {
+		const { data } = await import('./OCRA-0003.js');
+
+		return data;
+	},
 	OCRA0006: async (): Promise<AlbumResult> => {
 		const { data } = await import('./OCRA-0006.js');
 

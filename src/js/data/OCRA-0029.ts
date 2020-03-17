@@ -1,4 +1,4 @@
-import album from 'ocremix-data/src/data/albums/OCRA-0029';
+import album from 'ocremix-data/src/albums/OCRA-0029';
 import * as cidMap from 'ocremix-ipfs-data/src/data/OCRA-0029.min.json';
 
 export const data = {
