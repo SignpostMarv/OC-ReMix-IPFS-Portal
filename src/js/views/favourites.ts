@@ -10,7 +10,8 @@ import {
 import {
 	Disc,
 	Track,
-	CIDMap
+	CIDMap,
+	AlbumWithArt
 } from '../../module';
 import {
 	render,
@@ -95,6 +96,13 @@ export async function favouritesView(): Promise<HTMLElement> {
 			)
 		) {
 			const disc = discs[discRef];
+			const background =
+				disc.background ||
+				(
+					('art' in album)
+						? (album as AlbumWithArt).art.background
+						: undefined
+				);
 
 			let name = album.name;
 
@@ -111,6 +119,7 @@ export async function favouritesView(): Promise<HTMLElement> {
 							album,
 							trackRef[1],
 							disc.art,
+							background,
 						];
 					})}
 				></ocremix-track-queue-group>

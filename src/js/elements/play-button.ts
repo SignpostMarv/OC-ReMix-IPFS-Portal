@@ -37,6 +37,9 @@ export class PlayButton extends LitElement
 	art: ImageSource[] = [];
 
 	@property()
+	background: ImageSource|undefined;
+
+	@property()
 	label = '';
 
 	@property()
@@ -65,7 +68,7 @@ export class PlayButton extends LitElement
 	async handleClick(): Promise<void>
 	{
 		this.target.play(
-			[this.album, this.track, this.art, this.cidMap],
+			[this.album, this.track, this.art, this.cidMap, this.background],
 			() => { this.disabled = false; },
 			() => { this.disabled = true; },
 			() => { this.disabled = false; }

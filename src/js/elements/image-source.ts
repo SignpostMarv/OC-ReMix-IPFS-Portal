@@ -71,6 +71,9 @@ export class ImageSourceElement extends LitElement
 	@property()
 	placeholder = '';
 
+	@property()
+	hidden = false;
+
 	createRenderRoot(): ImageSourceElement
 	{
 		return this;
@@ -78,6 +81,10 @@ export class ImageSourceElement extends LitElement
 
 	render(): TemplateResult
 	{
+		if (this.hidden || '' === this.source.subpath) {
+			return html`${''}`;
+		}
+
 		return html`${asyncReplace(maybeYieldPictureFromSource(
 			this.source,
 			this.cidMap,

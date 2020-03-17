@@ -12,6 +12,7 @@ import {
 } from '../../module';
 import { urlForThing, albumTrackCID } from '../data';
 import { mimeType } from '../mimeType';
+import { ImageSourceElement } from '../elements/image-source';
 
 const preloadArtPromises: WeakMap<Track, Promise<string[]>> = new WeakMap();
 const completed = new WeakSet();
@@ -35,8 +36,6 @@ async function preloadTrackArt(
 			},
 			[]
 		);
-
-		console.log('art', art, 'reduced', reduced);
 
 		const promise: Promise<string[]> = new Promise((yup) => {
 			Promise.all(reduced.map((source: SrcsetSource) => {
@@ -126,7 +125,7 @@ function oxfordComma(...items: Array<string>): string {
 
 async function queueUpMediaSessionActionHandlers(
 	target: PlayTarget,
-	tracks: [Album, Track, ImageSource[], CIDMap][],
+	tracks: [Album, Track, ImageSource[], CIDMap, ImageSource|undefined][],
 	album: Album,
 	track: Track,
 	art: ImageSource[],
@@ -228,13 +227,17 @@ async function queueUpMediaSessionActionHandlers(
 export class PlayTarget
 {
 	target: HTMLAudioElement;
-	currentTrack: [Album, Track, ImageSource[], CIDMap]|undefined;
-	otherTracks: [Album, Track, ImageSource[], CIDMap][] = [];
+	background: ImageSourceElement;
+	currentTrack: [Album, Track, ImageSource[], CIDMap, ImageSource|undefined]|undefined;
+	otherTracks: [Album, Track, ImageSource[], CIDMap, ImageSource|undefined][] = [];
 	isPlaying: boolean;
 	cidMostRecentlyAttemptedToPlay = '';
 
-	constructor(target: HTMLAudioElement, isPlaying: boolean)
-	{
+	constructor(
+		target: HTMLAudioElement,
+		background: ImageSourceElement,
+		isPlaying: boolean
+	) {
 		target.addEventListener('ended', () => {
 			this.currentTrack = undefined;
 		});
@@ -267,11 +270,12 @@ export class PlayTarget
 		});
 
 		this.target = target;
+		this.background = background;
 		this.isPlaying = isPlaying;
 	}
 
 	async play(
-		freshTrack: [Album, Track, ImageSource[], CIDMap],
+		freshTrack: [Album, Track, ImageSource[], CIDMap, ImageSource|undefined],
 		onpause: undefined|(() => void) = undefined,
 		onpending: undefined|(() => void) = undefined,
 		ondone: undefined|(() => void) = undefined
@@ -293,6 +297,13 @@ export class PlayTarget
 			console.log('already playing?');
 
 			return;
+		}
+
+		if (
+			this.background.cidMap !== freshTrack[3] ||
+			this.background.source !== freshTrack[4]
+		) {
+			this.background.hidden = true;
 		}
 
 		console.log('trying to play', freshTrack);
@@ -323,6 +334,14 @@ export class PlayTarget
 			}
 
 			await this.target.play();
+
+			console.log(freshTrack);
+
+			if (freshTrack[4]) {
+				this.background.cidMap = freshTrack[3];
+				this.background.source = freshTrack[4];
+				this.background.hidden = false;
+			}
 		}
 
 		if (ondone) {
@@ -331,4 +350,8 @@ export class PlayTarget
 	}
 }
 
-export const DummyTarget = new PlayTarget(new Audio(), false);
+export const DummyTarget = new PlayTarget(
+	new Audio(),
+	new ImageSourceElement(),
+	false
+);

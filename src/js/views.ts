@@ -1,6 +1,9 @@
 import {
 	updateTitleSuffix,
 } from './utilities/elements.js';
+import {
+	target,
+} from './views/audio';
 
 const albumHashRegex = /^#album\/(OCRA\d{4})$/;
 
@@ -76,6 +79,8 @@ views.push(async (): Promise<HTMLElement> => {
 });
 
 export async function handleView(hash: string): Promise<HTMLElement> {
+	target.background.hidden = true;
+
 	for await (const maybe of views) {
 		const result = await maybe(hash);
 

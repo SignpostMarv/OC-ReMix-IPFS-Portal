@@ -24,7 +24,13 @@ export class TrackQueueGroup extends LitElement
 	name = '';
 
 	@property()
-	tracks: [Track, Album, CIDMap, ImageSource[]][] = [];
+	tracks: [
+		Track,
+		Album,
+		CIDMap,
+		ImageSource[],
+		ImageSource|undefined,
+	][] = [];
 
 	@property()
 	target: PlayTarget = DummyTarget;
@@ -39,7 +45,7 @@ export class TrackQueueGroup extends LitElement
 		return html`
 			<header>${this.name}</header>
 			<section class="tracks">${this.tracks.map((item): TemplateResult => {
-				const [track, album, cids, art] = item;
+				const [track, album, cids, art, background] = item;
 				return html`
 					<ocremix-track
 							.track=${track}
@@ -47,6 +53,7 @@ export class TrackQueueGroup extends LitElement
 							.art=${art}
 							.cidMap=${cids}
 							.target=${this.target}
+							.background=${background}
 							play-label="Play or Pause ${
 								track.name
 							}"
@@ -112,6 +119,7 @@ export class Queue extends LitElement
 				track.track,
 				track.art,
 				track.cidMap,
+				track.background,
 			];
 		});
 	}

@@ -96,6 +96,9 @@ export class TrackElement extends LitElement
 	@property()
 	art: ImageSource[] = [];
 
+	@property()
+	background: ImageSource|undefined;
+
 	@property({attribute: 'play-label'})
 	playLabel = '';
 
@@ -120,6 +123,7 @@ export class TrackElement extends LitElement
 				.cidMap=${this.cidMap}
 				label="${this.playLabel}"
 				.target=${this.target}
+				.background=${this.background}
 			></ocremix-play-button>
 			<span>
 			${this.track.name}
