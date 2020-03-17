@@ -53,10 +53,11 @@ function urlCredit(credit: CreditWithId|CreditWithUrl): TemplateResult
 {
 	return html`<a
 		rel="nofollow noopener"
+		target="_blank"
 		href="${
 			('url' in credit)
 				? credit.url
-				: `https://ocremix.org/artist/${credit}`
+				: `https://ocremix.org/artist/${credit.id}`
 		}"
 	>${namedCredit(credit)}</a>`;
 }
@@ -67,7 +68,7 @@ function creditToTemplateResult(credit: Credit): TemplateResult {
 			('string' === typeof credit)
 				? credit
 				: (
-					! ('url' in credit)
+					! ('url' in credit || 'id' in credit)
 						? namedCredit(credit)
 						: urlCredit(credit)
 				)
