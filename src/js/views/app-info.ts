@@ -20,10 +20,52 @@ bulkAlbumActions.classList.add('albums');
 export async function updateAppInfo(): Promise<HTMLElement> {
 	updateTitleSuffix('App Info');
 
+	const cloudflare = !! localStorage.getItem('enable-cloudflare-gateway');
+
 	if ( ! rendered) {
 		render(
 			html`
 				<h2>App Info</h2>
+				<p>
+					Use <a
+						href="https://www.cloudflare.com/distributed-web-gateway/"
+						target="_blank"
+						rel="nofollow noopener"
+					>Cloudflare Gateway</a>:
+					<button
+						type="button"
+						role="switch"
+						aria-checked="${cloudflare ? 'true' : 'false'}"
+						title="Toggle usage of Cloudflare Gateway"
+						@click=${(e: Event): void => {
+							const button = e.target as HTMLButtonElement;
+
+							const status = ! localStorage.getItem(
+								'enable-cloudflare-gateway'
+							);
+
+							if (status) {
+								localStorage.setItem(
+									'enable-cloudflare-gateway',
+									'1'
+								);
+							} else {
+								localStorage.removeItem(
+									'enable-cloudflare-gateway'
+								);
+							}
+
+							button.setAttribute(
+								'aria-checked',
+								status ? 'true' : 'false'
+							);
+
+							button.textContent = (
+								status ? '☑' : '☐'
+							);
+						}}
+					>${cloudflare ? '☑' : '☐'}</button>
+				</p>
 				${
 					('storage' in navigator)
 						? html`

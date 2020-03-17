@@ -58,13 +58,47 @@ export async function fetchBlobViaCacheOrIpfs(
 		]);
 		const url = '/ipfs/' + ocremix[path];
 		const faux = new Request(url);
-		const maybe: Response|undefined = await cache.match(faux);
+		let maybe: Response|undefined = await cache.match(faux);
+		const cached = !! maybe;
+
+		if ( ! maybe && localStorage.getItem('enable-cloudflare-gateway')) {
+			console.log('using cloudflare gateway');
+
+			const controller = new AbortController();
+			const signal = controller.signal;
+
+			const controllerTimer = setTimeout(
+				() => {
+					controller.abort();
+				},
+				10 * 1000
+			);
+
+			try {
+				maybe = await fetch(
+					`https://cloudflare-ipfs.com/ipfs/${ocremix[path]}`,
+					{signal}
+				).then(r => {
+					clearTimeout(controllerTimer);
+
+					if (200 !== r.status) {
+						return undefined;
+					} else {
+						return r;
+					}
+				});
+			} catch (err) {
+				clearTimeout(controllerTimer);
+
+				console.error('cloudflare fetch failed', err);
+			}
+		}
 
 		const cacheBlob = maybe
 			? await maybe.blob()
 			: await fetchBlobViaCacheOrIpfs(path, true, ocremix)
 
-		if ( ! maybe) {
+		if ( ! cached) {
 			await cache.put(url, new Response(cacheBlob));
 		}
 
