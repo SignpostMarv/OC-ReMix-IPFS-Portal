@@ -61,7 +61,7 @@ export class AlbumLink extends LitElement
 			<a
 				class="entry"
 				href="#album/${this.id}"
-				data-name="${this.id}"
+				data-name="${this.name}"
 				aria-label="View &quot;${
 						this.name !== 'Loading...'
 							? this.name
