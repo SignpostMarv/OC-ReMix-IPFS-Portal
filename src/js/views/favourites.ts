@@ -23,6 +23,8 @@ import {
 
 const main = document.createElement('main');
 
+main.classList.add('view');
+
 export async function favouritesView(): Promise<HTMLElement> {
 	updateTitleSuffix('Favourites');
 
