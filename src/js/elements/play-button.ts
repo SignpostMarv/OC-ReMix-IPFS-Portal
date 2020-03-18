@@ -20,6 +20,7 @@ export class PlayButton extends LitElement
 			directors: [],
 			composers: [],
 			arrangers: [],
+			performers: [],
 			artwork: [],
 		}},
 		{name: '', subpath: '', index: -1, credits: []},

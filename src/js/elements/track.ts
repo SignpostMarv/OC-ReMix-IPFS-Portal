@@ -88,6 +88,7 @@ export class TrackElement extends LitElement
 		directors: [],
 		composers: [],
 		arrangers: [],
+		performers: [],
 		artwork: [],
 	}};
 

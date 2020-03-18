@@ -519,6 +519,10 @@ export async function* yieldBulkAlbumAction(
 		disc.art.forEach(pushImageSource);
 		disc.tracks.forEach((track) => {
 			pathsForApp.push(track.subpath);
+
+			if ('background' in track) {
+				pathsForApp.push((track.background as ImageSource).subpath);
+			}
 		});
 	});
 

@@ -35,4 +35,9 @@ export const Albums: {
 
 		return data;
 	},
+	OCRA0060: async (): Promise<AlbumResult> => {
+		const { data } = await import('./OCRA-0060.js');
+
+		return data;
+	},
 };

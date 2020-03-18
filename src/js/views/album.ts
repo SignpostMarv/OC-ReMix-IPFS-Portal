@@ -71,7 +71,11 @@ function AlbumView(
 								track,
 								disc.art,
 								cids,
-								background,
+								(
+									'background' in track
+										? track.background
+										: background
+								),
 								covers
 							];
 						}
