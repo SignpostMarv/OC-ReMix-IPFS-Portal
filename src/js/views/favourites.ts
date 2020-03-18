@@ -119,7 +119,11 @@ export async function favouritesView(
 							trackRef[0],
 							disc.art,
 							trackRef[1],
-							background,
+							(
+								'background' in trackRef[0]
+									? trackRef[0].background
+									: background
+							),
 							(
 								('art' in album)
 									? (album as AlbumWithArt).art.covers
