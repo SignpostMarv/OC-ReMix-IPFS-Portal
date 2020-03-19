@@ -7,7 +7,7 @@ import {
 
 declare type SysteImageCallback = () => HTMLPictureElement;
 
-function ImagesToPicture(icon: string): HTMLPictureElement {
+function ImagesToPicture(icon: string, alt: string): HTMLPictureElement {
 	const picture = document.createElement('picture');
 	const [
 		img,
@@ -35,6 +35,7 @@ function ImagesToPicture(icon: string): HTMLPictureElement {
 
 	img.width = img.height = 16;
 	img.src = `${webp}`;
+	img.alt = alt;
 
 	[
 		img,
@@ -48,14 +49,14 @@ function ImagesToPicture(icon: string): HTMLPictureElement {
 }
 
 const Systems: {[id: string]: SysteImageCallback} = {
-	'gb': () => { return ImagesToPicture('gb'); },
-	'gbc': () => { return ImagesToPicture('gbc'); },
-	'gcn': () => { return ImagesToPicture('gcn'); },
-	'gen': () => { return ImagesToPicture('gen'); },
-	'nes': () => { return ImagesToPicture('nes'); },
-	'n64': () => { return ImagesToPicture('n64'); },
-	'snes': () => { return ImagesToPicture('snes'); },
-	'wii': () => { return ImagesToPicture('wii'); },
+	'gb': () => { return ImagesToPicture('gb', 'Game Boy'); },
+	'gbc': () => { return ImagesToPicture('gbc', 'Game Boy Color'); },
+	'gcn': () => { return ImagesToPicture('gcn', 'GameCube'); },
+	'gen': () => { return ImagesToPicture('gen', 'Mega Drive'); },
+	'nes': () => { return ImagesToPicture('nes', 'NES'); },
+	'n64': () => { return ImagesToPicture('n64', 'Nintendo 64'); },
+	'snes': () => { return ImagesToPicture('snes', 'SNES'); },
+	'wii': () => { return ImagesToPicture('wii', 'Wii'); },
 };
 
 export async function AlbumSystemImages(

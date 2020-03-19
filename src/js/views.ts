@@ -5,6 +5,22 @@ import { PlayTarget } from './utilities/play-target.js';
 
 const albumHashRegex = /^#album\/(OCRA-?\d{4})$/;
 
+const cssPreloads: {[regex: string]: HTMLLinkElement[]} = {};
+const cssRegex: {[regex: string]: RegExp} = {};
+const cssDone: WeakSet<RegExp> = new WeakSet();
+
+([...document.head.querySelectorAll(
+	'link[rel="preload"][as="style"][data-regex]'
+)] as HTMLLinkElement[]).forEach(link => {
+	const regexStr = link.dataset.regex as string;
+	if ( ! (regexStr in cssPreloads)) {
+		cssPreloads[regexStr] = [];
+		cssRegex[regexStr] = new RegExp(regexStr);
+	}
+
+	cssPreloads[regexStr].push(link);
+});
+
 const views: Array<(
 	hash: string,
 	target: PlayTarget
@@ -92,6 +108,19 @@ export async function handleView(
 ): Promise<HTMLElement> {
 	target.background.hidden = true;
 	target.covers.hidden = true;
+
+	for (const regexStr of Object.keys(cssRegex)) {
+		const cssRegexObj = cssRegex[regexStr];
+
+		if (cssRegexObj.test(hash) && ! cssDone.has(cssRegexObj)) {
+			console.log(regexStr, cssRegexObj, hash);
+			cssDone.add(cssRegexObj);
+
+			cssPreloads[regexStr].forEach(link => {
+				link.rel = 'stylesheet';
+			});
+		}
+	}
 
 	for await (const maybe of views) {
 		const result = await maybe(hash, target);

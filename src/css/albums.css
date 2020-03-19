@@ -1,0 +1,28 @@
+ocremix-album-link
+{
+	.systems
+	{
+		position: absolute ;
+		top: 0 ;
+		right: 0 ;
+		list-style: inside none ;
+		display: flex ;
+		flex-direction: row-reverse ;
+
+		picture
+		{
+			display: block ;
+			width: 1rem ;
+			height: auto ;
+			margin: .25rem ;
+		}
+
+		img
+		{
+			display: block ;
+			width: 100% ;
+			height: auto ;
+			image-rendering: pixelated ;
+		}
+	}
+}

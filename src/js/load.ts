@@ -10,12 +10,6 @@ export * from './elements/queue.js';
 export * from './elements/favourite-button.js';
 
 (async (): Promise<void> => {
-	[...document.head.querySelectorAll(
-		'link[rel="preload"][as="style"][href*="/css/"][href$=".css"]'
-	)].forEach((preloadStylesheet) => {
-		(preloadStylesheet as HTMLLinkElement).rel = 'stylesheet';
-	})
-
 	const back: HTMLAnchorElement|null = document.querySelector(
 		'body > header a#load-albums'
 	);

@@ -37,14 +37,13 @@ const postcss_config = () => {
 		postcss_plugins.system_monospace(),
 		postcss_plugins.cssnano({
 			cssDeclarationSorter: 'concentric-css',
-			discardUnused: true,
 		}),
 	]);
 };
 
 gulp.task('css--style', () => {
 	return gulp.src(
-		'./src/css/style.css'
+		'./src/css/**/*.css'
 	).pipe(
 		newer('./dist/css/')
 	).pipe(
