@@ -29,6 +29,24 @@ export async function ocremixCache(): Promise<Cache> {
 	return await caches.open('ocremix-ipfs-by-cid');
 }
 
+async function IsInCache(path: string, ocremix: CIDMap): Promise<boolean> {
+	const match = /.(mp3|png|jpe?g)$/i.exec(path);
+
+	if ( ! match) {
+		throw new Error('Unsupported file type requested!');
+	}
+
+	const [
+		cache,
+	] = await Promise.all([
+		ocremixCache(),
+	]);
+	const url = '/ipfs/' + ocremix[path];
+	const faux = new Request(url);
+
+	return !! await cache.match(faux);
+}
+
 export async function fetchBlobViaCacheOrIpfs(
 	path: string,
 	skipCache = false,
@@ -59,7 +77,7 @@ export async function fetchBlobViaCacheOrIpfs(
 		const url = '/ipfs/' + ocremix[path];
 		const faux = new Request(url);
 		let maybe: Response|undefined = await cache.match(faux);
-		const cached = !! maybe;
+		const cached = await IsInCache(path, ocremix);
 
 		if ( ! maybe && localStorage.getItem('enable-cloudflare-gateway')) {
 			const controller = new AbortController();
@@ -146,6 +164,24 @@ export async function url(
 	path: string,
 	cids: CIDMap
 ): Promise<string> {
+	const alreadyCached = await IsInCache(path, cids);
+
+	if ( ! alreadyCached) {
+		const cloudflare = !! localStorage.getItem(
+			'directly-enable-cloudflare-gateway'
+		);
+
+		if (cloudflare) {
+			if ( ! (path in cids)) {
+				throw new Error(
+					`cannot use cloudflare gateway, ${path} not in cid map!`
+				);
+			}
+
+			return `https://cloudflare-ipfs.com/ipfs/${cids[path]}`;
+		}
+	}
+
 	return URL.createObjectURL(await blob(path, cids));
 }
 

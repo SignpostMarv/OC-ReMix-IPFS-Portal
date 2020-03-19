@@ -21,6 +21,9 @@ export async function updateAppInfo(): Promise<HTMLElement> {
 	updateTitleSuffix('App Info');
 
 	const cloudflare = !! localStorage.getItem('enable-cloudflare-gateway');
+	const cloudflareDirectly = !! localStorage.getItem(
+		'directly-enable-cloudflare-gateway'
+	);
 
 	if ( ! rendered) {
 		render(
@@ -65,6 +68,46 @@ export async function updateAppInfo(): Promise<HTMLElement> {
 							);
 						}}
 					>${cloudflare ? '☑' : '☐'}</button>
+				</p>
+				<p>
+					Use <a
+						href="https://www.cloudflare.com/distributed-web-gateway/"
+						target="_blank"
+						rel="nofollow noopener"
+					>Cloudflare Gateway</a> directly (skips ipfs/local caching):
+					<button
+						type="button"
+						role="switch"
+						aria-checked="${cloudflare ? 'true' : 'false'}"
+						title="Toggle usage of Cloudflare Gateway"
+						@click=${(e: Event): void => {
+							const button = e.target as HTMLButtonElement;
+
+							const status = ! localStorage.getItem(
+								'directly-enable-cloudflare-gateway'
+							);
+
+							if (status) {
+								localStorage.setItem(
+									'directly-enable-cloudflare-gateway',
+									'1'
+								);
+							} else {
+								localStorage.removeItem(
+									'directly-enable-cloudflare-gateway'
+								);
+							}
+
+							button.setAttribute(
+								'aria-checked',
+								status ? 'true' : 'false'
+							);
+
+							button.textContent = (
+								status ? '☑' : '☐'
+							);
+						}}
+					>${cloudflareDirectly ? '☑' : '☐'}</button>
 				</p>
 				${
 					('storage' in navigator)
