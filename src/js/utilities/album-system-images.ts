@@ -34,9 +34,13 @@ function ImagesToPicture(icon: string): HTMLPictureElement {
 	pngSource.srcset = `${png} 16w`;
 
 	img.width = img.height = 16;
-	img.src = `${png}`;
+	img.src = `${webp}`;
 
-	[img, webpSource, pngSource].forEach(append => {
+	[
+		img,
+		webpSource,
+		pngSource,
+	].forEach(append => {
 		picture.appendChild(append);
 	});
 
