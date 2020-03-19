@@ -24,6 +24,9 @@ import {
 	SerialiseTrack
 } from '../utilities/serialise.js';
 import { target } from '../utilities/default-target';
+import {
+	PlaceholderAlbum,
+} from '../data/placeholders';
 
 function noFixAvailable(): TemplateResult {
 	return html`
@@ -84,13 +87,7 @@ export class TrackElement extends LitElement
 	track: Track = {name: '', subpath: '', index: -1, credits: []};
 
 	@property()
-	album: Album = {name: '', id: '', path: '', discs: [], credits: {
-		directors: [],
-		composers: [],
-		arrangers: [],
-		performers: [],
-		artwork: [],
-	}};
+	album: Album = PlaceholderAlbum;
 
 	@property()
 	cidMap: CIDMap = {};

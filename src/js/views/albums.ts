@@ -4,7 +4,10 @@ import {
 	TemplateResult,
 } from 'lit-html';
 import {
-	Albums,
+	asyncAppend,
+} from 'lit-html/directives/async-append';
+import {
+	AlbumsIterator,
 } from '../data/albums.js';
 import {
 	updateTitleSuffix,
@@ -14,15 +17,18 @@ const albums = document.createElement('main');
 
 albums.classList.add('albums');
 
+async function* MapAlbumsToLinks(): AsyncGenerator<TemplateResult> {
+	for await (const album of AlbumsIterator()) {
+		yield html`
+			<ocremix-album-link
+				.album=${album}
+			></ocremix-album-link>`;
+	}
+}
+
 render(
 	html`
-		${
-			Object.keys(Albums).map((id): TemplateResult => {
-				return html`
-					<ocremix-album-link id="${id}"></ocremix-album-link>
-				`;
-			})
-		}
+		${asyncAppend(MapAlbumsToLinks())}
 	`,
 	albums
 );

@@ -3,7 +3,7 @@ import {
 } from './utilities/elements.js';
 import { PlayTarget } from './utilities/play-target.js';
 
-const albumHashRegex = /^#album\/(OCRA\d{4})$/;
+const albumHashRegex = /^#album\/(OCRA-?\d{4})$/;
 
 const views: Array<(
 	hash: string,
@@ -46,6 +46,7 @@ views.push(async (
 	target: PlayTarget
 ): Promise<HTMLElement|undefined> => {
 	const maybe = albumHashRegex.exec(hash);
+	console.log(maybe);
 	if ( ! maybe) {
 		return;
 	}

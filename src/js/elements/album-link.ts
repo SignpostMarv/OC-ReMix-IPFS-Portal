@@ -12,8 +12,11 @@ import {
 	Albums,
 } from '../data/albums';
 import {
-	AlbumWithArt
+	AlbumWithArt, Album
 } from '../../module';
+import {
+	PlaceholderAlbum
+} from '../data/placeholders';
 
 async function* yieldPlaceholderThenMaybePicture(
 	link: AlbumLink,
@@ -21,15 +24,15 @@ async function* yieldPlaceholderThenMaybePicture(
 ): AsyncGenerator<string|TemplateResult> {
 	yield placeholder;
 
-	if ( ! (link.id in Albums)) {
+	const catalogId = link.album.catalogNumber.replace(/-/g, '');
+
+	if ( ! (catalogId in Albums)) {
 		yield 'Error...';
 
 		return;
 	}
 
-	const {album, cids} = await Albums[link.id]();
-
-	link.name = album.name;
+	const {album, cids} = await Albums[catalogId]();
 
 	if ('art' in album) {
 		yield html`<ocremix-image
@@ -37,7 +40,7 @@ async function* yieldPlaceholderThenMaybePicture(
 				.source=${(album as AlbumWithArt).art.covers[0]}
 			></ocremix-image>`;
 	} else {
-		yield album.id.replace(/^(.{4})(.{4})$/, '$1-$2');
+		yield album.catalogNumber;
 	}
 }
 
@@ -45,10 +48,7 @@ async function* yieldPlaceholderThenMaybePicture(
 export class AlbumLink extends LitElement
 {
 	@property()
-	id = '';
-
-	@property()
-	name = 'Loading...';
+	album: Album = PlaceholderAlbum;
 
 	createRenderRoot(): AlbumLink
 	{
@@ -60,13 +60,9 @@ export class AlbumLink extends LitElement
 		return html`
 			<a
 				class="entry"
-				href="#album/${this.id}"
-				data-name="${this.name}"
-				aria-label="View &quot;${
-						this.name !== 'Loading...'
-							? this.name
-							: this.id
-					}&quot;"
+				href="#album/${this.album.catalogNumber}"
+				data-name="${this.album.name}"
+				aria-label="View &quot;${this.album.name}&quot;"
 			>${asyncReplace(yieldPlaceholderThenMaybePicture(this))}</a>
 		`;
 	}

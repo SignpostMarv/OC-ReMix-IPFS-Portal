@@ -559,9 +559,7 @@ export async function* yieldBulkAlbumAction(
 						.source=${(album as AlbumWithArt).art.covers[0]}
 						></ocremix-image>`;
 				} else {
-					yield (
-						album as Album
-					).id.replace(/^(.{4})(.{4})$/, '$1-$2');
+					yield album.catalogNumber;
 				}
 
 				await updateStorageEstimate();

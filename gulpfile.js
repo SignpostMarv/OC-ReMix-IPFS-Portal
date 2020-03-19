@@ -9,6 +9,7 @@ const eslint = require('gulp-eslint');
 const uglify = require('gulp-uglify-es').default;
 const inline_source = require('gulp-inline-source');
 const rollup = require('rollup');
+const typescript = require('gulp-typescript');
 
 const rollupPlugins = {
 	commonjs: require('@rollup/plugin-commonjs'),
@@ -193,6 +194,16 @@ gulp.task('sync--ipfs--build-module', async () => {
 	});
 });
 
+gulp.task('sync--ocremix-data', () => {
+	return gulp.src('./node_modules/ocremix-data/src/**/*.ts').pipe(
+		typescript.createProject(
+			'./tsconfig.ocremix-data.json'
+		)()
+	).pipe(
+		gulp.dest('./src/ocremix-data/')
+	);
+});
+
 gulp.task('default', gulp.series(...[
 	'eslint',
 	gulp.parallel(...[
@@ -200,6 +211,7 @@ gulp.task('default', gulp.series(...[
 		'css--first-load',
 		'css--style',
 		'sync--ipfs--build-module',
+		'sync--ocremix-data',
 	]),
 	'rollup',
 	'uglify',

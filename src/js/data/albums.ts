@@ -41,3 +41,9 @@ export const Albums: {
 		return data;
 	},
 };
+
+export async function* AlbumsIterator(): AsyncGenerator<Album> {
+	for (const id of Object.keys(Albums)) {
+		yield await (await Albums[id]()).album;
+	}
+}

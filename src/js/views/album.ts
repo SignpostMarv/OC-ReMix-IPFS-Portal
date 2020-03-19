@@ -94,8 +94,10 @@ export async function albumView(
 	albumId: string,
 	target: PlayTarget
 ): Promise<[HTMLElement, Album]|undefined> {
-	if (albumId in Albums) {
-		const { album, cids } = await Albums[albumId]();
+	const albumKey = albumId.replace(/-/g, '');
+
+	if (albumKey in Albums) {
+		const { album, cids } = await Albums[albumKey]();
 
 		return [AlbumView(album, cids, target), album];
 	}

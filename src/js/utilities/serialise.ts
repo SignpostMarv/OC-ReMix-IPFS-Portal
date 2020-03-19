@@ -27,5 +27,5 @@ export function SerialiseTrack(
 		throw new Error('track not found on disc in album!');
 	}
 
-	return [album.id, discIndex, track.index];
+	return [album.catalogNumber.replace(/-/g, ''), discIndex, track.index];
 }

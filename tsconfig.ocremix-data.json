@@ -2,19 +2,14 @@
 	"compilerOptions": {
 		"allowJs": false,
 		"allowSyntheticDefaultImports": false,
-		"declaration": false,
+		"declaration": true,
 		"declarationMap": false,
 		"forceConsistentCasingInFileNames": true,
 		"experimentalDecorators": true,
 		"lib": [
-			"dom",
-			"dom.iterable",
 			"esnext"
 		],
 		"plugins": [
-			{
-				"name": "typescript-lit-html-plugin"
-			}
 		],
 		"module": "ESNext",
 		"moduleResolution": "Node",
@@ -27,7 +22,6 @@
 		"noUnusedParameters": true,
 		"strict": true,
 		"rootDir": "./",
-		"outDir": "./dist/",
 		"resolveJsonModule": true,
 		"target": "ESNext"
 	},

@@ -10,19 +10,16 @@ import {
 	PlayTargetTrack,
 } from '../utilities/play-target.js';
 import { target } from '../utilities/default-target.js';
+import {
+	PlaceholderAlbum,
+} from '../data/placeholders';
 
 @customElement('ocremix-play-button')
 export class PlayButton extends LitElement
 {
 	@property()
 	playTargetTrack: PlayTargetTrack = [
-		{name: '', id: '', path: '', discs: [], credits: {
-			directors: [],
-			composers: [],
-			arrangers: [],
-			performers: [],
-			artwork: [],
-		}},
+		PlaceholderAlbum,
 		{name: '', subpath: '', index: -1, credits: []},
 		[],
 		{},
