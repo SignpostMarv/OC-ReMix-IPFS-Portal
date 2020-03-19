@@ -17,6 +17,10 @@ import {
 import {
 	PlaceholderAlbum
 } from '../data/placeholders';
+import {
+	AlbumSystemImages,
+} from '../utilities/album-system-images';
+import { asyncAppend } from 'lit-html/directives/async-append';
 
 async function* yieldPlaceholderThenMaybePicture(
 	link: AlbumLink,
@@ -44,6 +48,26 @@ async function* yieldPlaceholderThenMaybePicture(
 	}
 }
 
+async function* AlbumSystemPictureList(
+	album: Album
+): AsyncGenerator<TemplateResult> {
+	const systemPictures = await AlbumSystemImages(album);
+
+	if (systemPictures.length < 1) {
+		yield html`${''}`;
+
+		return;
+	}
+
+	yield html`
+		<ul class="systems">
+			${systemPictures.map(picture => {
+				return html`<li>${picture}</li>`;
+			})}
+		</ul>
+	`;
+}
+
 @customElement('ocremix-album-link')
 export class AlbumLink extends LitElement
 {
@@ -63,7 +87,9 @@ export class AlbumLink extends LitElement
 				href="#album/${this.album.catalogNumber}"
 				data-name="${this.album.name}"
 				aria-label="View &quot;${this.album.name}&quot;"
-			>${asyncReplace(yieldPlaceholderThenMaybePicture(this))}</a>
+			>${
+				asyncReplace(yieldPlaceholderThenMaybePicture(this))
+			}${asyncAppend(AlbumSystemPictureList(this.album))}</a>
 		`;
 	}
 }

@@ -50,3 +50,15 @@ declare class MediaMetadata {
 		artwork: Array<MediaMetadataArtwork>;
 	});
 }
+
+declare module '*.png' {
+	const content: any;
+
+	export = content;
+}
+
+declare module '*.webp' {
+	const content: any;
+
+	export = content;
+}

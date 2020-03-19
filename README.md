@@ -3,6 +3,8 @@
 ## Build
 1) `npm install`
 2) `gulp`
+3) `cd ./dist/`
+4) `npm install`
 
 ## Serve
 emojis are used for icons, so serving as utf-8 is required.

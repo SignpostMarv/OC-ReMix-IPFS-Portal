@@ -62,8 +62,6 @@ export async function fetchBlobViaCacheOrIpfs(
 		const cached = !! maybe;
 
 		if ( ! maybe && localStorage.getItem('enable-cloudflare-gateway')) {
-			console.log('using cloudflare gateway');
-
 			const controller = new AbortController();
 			const signal = controller.signal;
 

@@ -14,5 +14,6 @@ export const PlaceholderAlbum: Album = {
 		arrangers: [],
 		performers: [],
 		artwork: [],
-	}
+	},
+	games: [],
 };

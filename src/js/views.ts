@@ -46,7 +46,7 @@ views.push(async (
 	target: PlayTarget
 ): Promise<HTMLElement|undefined> => {
 	const maybe = albumHashRegex.exec(hash);
-	console.log(maybe);
+
 	if ( ! maybe) {
 		return;
 	}
