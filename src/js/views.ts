@@ -72,7 +72,7 @@ views.push(async (
 
 		return view;
 	} else {
-		console.log(
+		console.info(
 			'hash changed while album data was being loaded'
 		);
 	}

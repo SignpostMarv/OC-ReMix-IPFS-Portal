@@ -343,14 +343,10 @@ export class PlayTarget
 			await this.target.play();
 
 			if (freshTrack[4]) {
-				console.log('setting background');
-
 				this.background.cidMap = freshTrack[3];
 				this.background.source = freshTrack[4];
 				this.background.hidden = false;
 			}
-
-			console.log('setting covers');
 
 			this.covers.sources = [freshTrack[3], freshTrack[5]];
 			this.covers.hidden = false;

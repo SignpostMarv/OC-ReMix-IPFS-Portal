@@ -85,8 +85,6 @@ export class Queue extends LitElement
 			return;
 		}
 
-		console.log('is dummy', this.target === target);
-
 		this.target.otherTracks = ([
 			...this.querySelectorAll('ocremix-track')
 		].filter((track) => {
